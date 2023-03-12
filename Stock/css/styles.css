@@ -1,0 +1,13 @@
+.axis path,
+.axis line {
+stroke: teal;
+shape-rendering: crispEdges;
+}
+
+.tick text {
+    font-family: Optima, Futura, sans-serif;
+    font-weight: bold;
+    font-size: 14px;
+    fill: teal;
+    transform: rotate(-65);
+    }
