@@ -10,12 +10,12 @@ puppeteer
     })
     .then(async (browser) => {
         const page = await browser.newPage();
-        /*
+
         await page.goto('file://C:\\Users\\PHAMHONGDANG\\PycharmProjects\\TelegramChatBot\\Stock\\index.html');
         await delay(500);
         await page.screenshot({path: "photo/entire-page.png"});
 
-         */
+         
 
         await page.goto("https://fireant.vn/home/content/symbols/VNINDEX");
         await delay(200);
