@@ -11,11 +11,9 @@ puppeteer
     .then(async (browser) => {
         const page = await browser.newPage();
 
-        await page.goto('file://C:\\Users\\PHAMHONGDANG\\PycharmProjects\\TelegramChatBot\\Stock\\index.html');
-        await delay(500);
+        await page.goto('file://C:\\Users\\Education\\PycharmProjects\\Telegram-Chat-Bot\\Stock\\index.html');
+        await delay(5000);
         await page.screenshot({path: "photo/entire-page.png"});
-
-         
 
         await page.goto("https://fireant.vn/home/content/symbols/VNINDEX");
         await delay(200);
@@ -30,11 +28,7 @@ puppeteer
         console.log(tab.length);
         await delay(2000);
 
-        page.waitForXPath('/html/body/div[2]/div[3]/div/div/div[1]/div/div/div/div/div/div[7]').then(() => console.log("have a xpath"));
-
-
-
-        /*
+                /*
                 const selector2 = ".bp3-portal";
                 await page.evaluate(`document.querySelector("${selector2}").remove()`);
         */
