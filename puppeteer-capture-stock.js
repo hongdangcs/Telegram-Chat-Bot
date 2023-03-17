@@ -58,17 +58,17 @@ async function openPage() {
     console.log("open page");
 }
 
-async function captureScreenshot() {
+async function captureScreenshot(imageName) {
     if (!browser) {
         await launchBrowser();
-      delay(5000);
+        delay(5000);
     }
-    if(!page){
-      await openPage();
-      delay(5000);
+    if (!page) {
+        await openPage();
+        delay(5000);
     }
 
-    await page.screenshot({path: "photo/webpage.png"});
+    await page.screenshot({path: "photo/"+ imageName +".png"});
     console.log("take Screen shot");
 }
 
