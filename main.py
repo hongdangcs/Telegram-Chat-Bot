@@ -10,7 +10,7 @@ import atexit
 import time
 
 chrome_options = Options()
-#chrome_options.add_argument("--headless")
+chrome_options.add_argument("--headless")
 chrome_options.add_argument("--window-size=1920,1080")
 stock_driver = webdriver.Chrome(options=chrome_options)
 stock_driver.get("file:///C:/Users/Education/PycharmProjects/Telegram-Chat-Bot/Stock/index.html")
@@ -19,12 +19,12 @@ def configDriver(driver, i):
     driver.execute_script("document.querySelectorAll('.bp3-overlay')[1].parentElement.remove();")
     time.sleep(5)
     driver.execute_script("document.querySelectorAll('li.bp3-tab')[11].click();")
-    time.sleep(120)
+    time.sleep(300)
     driver.execute_script("window.document.all[window.document.all.length-3].children")
     time.sleep(2)
-    driver.execute_script("window.document.all[window.document.all.length-3].contentDocument.querySelectorAll('.toolbar-LZaMRgb9 .button-1SoiPS-f')[0].click();")
+    driver.execute_script("window.document.all[window.document.all.length-1].contentDocument.querySelectorAll('.toolbar-LZaMRgb9 .button-1SoiPS-f')[0].click();")
     time.sleep(2)
-    driver.execute_script("window.document.all[window.document.all.length-3].contentDocument.querySelectorAll('.menuBox-g78rwseC .item-2IihgTnv')[0].click();")
+    driver.execute_script("window.document.all[window.document.all.length-1].contentDocument.querySelectorAll('.menuBox-g78rwseC .item-2IihgTnv')["+str(i)+"].click();")
 
 #fireant_driver = [webdriver.Chrome(options=chrome_options) for i in range(5)]
 #for i in range(5):
