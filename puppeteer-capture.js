@@ -27,10 +27,9 @@ puppeteer
         await tab[5].click();
         console.log(tab.length);
         await delay(2000);
-
-                /*
-                const selector2 = ".bp3-portal";
-                await page.evaluate(`document.querySelector("${selector2}").remove()`);
+        /*
+        const selector2 = ".bp3-portal";
+        await page.evaluate(`document.querySelector("${selector2}").remove()`);
         */
 
         await page.screenshot({path: "photo/fireant-page.png"});
