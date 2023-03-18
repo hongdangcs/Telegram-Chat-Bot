@@ -15,26 +15,40 @@ chrome_options.add_argument("--window-size=1920,1080")
 stock_driver = webdriver.Chrome(options=chrome_options)
 stock_driver.get("file:///C:/Users/Education/PycharmProjects/Telegram-Chat-Bot/Stock/index.html")
 
-fireant_driver = webdriver.Chrome(options=chrome_options)
-fireant_driver.get("https://fireant.vn/charts")
-time.sleep(5)
-fireant_driver.execute_script("document.querySelector('div.bp3-overlay').parentElement.remove();")
-fireant_driver.execute_script("document.getElementById('header-toolbar-symbol-search').click();")
-time.sleep(2)
-print("opened browser")
+def configDriver(driver, i):
+    driver.execute_script("document.querySelectorAll('.bp3-overlay')[1].parentElement.remove();")
+    time.sleep(5)
+    driver.execute_script("document.querySelectorAll('li.bp3-tab')[11].click();")
+    time.sleep(120)
+    driver.execute_script("window.document.all[window.document.all.length-3].children")
+    time.sleep(2)
+    driver.execute_script("window.document.all[window.document.all.length-3].contentDocument.querySelectorAll('.toolbar-LZaMRgb9 .button-1SoiPS-f')[0].click();")
+    time.sleep(2)
+    driver.execute_script("window.document.all[window.document.all.length-3].contentDocument.querySelectorAll('.menuBox-g78rwseC .item-2IihgTnv')[0].click();")
 
-#document.querySelectorAll('.bp3-overlay')[1].parentElement.remove();
-#document.querySelectorAll('li.bp3-tab')[11].click();
+#fireant_driver = [webdriver.Chrome(options=chrome_options) for i in range(5)]
+#for i in range(5):
+fireant_driver = webdriver.Chrome(options=chrome_options)
+fireant_driver.get("https://fireant.vn/dashboard/content/symbols/VNINDEX")
+time.sleep(2)
+configDriver(fireant_driver, 2)
+
+
+
+#fireant_driver.execute_script("window.document.all[window.document.all.length-1].contentDocument.querySelectorAll('#header-toolbar-fullscreen')[0].click();")
 #document.querySelectorAll('#header-toolbar-fullscreen')[0].click();
 #document.querySelectorAll('.button-1SoiPS-f.apply-common-tooltip')[1].click();
 #document.querySelectorAll('.item-2IihgTnv')[12].click();
+
+print("opened browser")
 
 def captureStock(imageName):
     stock_driver.get_screenshot_as_file("./photo/" + imageName + ".png")
     print("Capture: " + imageName)
 
 def captureFireant(imageName):
-    fireant_driver.get_screenshot_as_file("./photo/" + imageName + ".png")
+    chart = fireant_driver.find_element(By.CSS_SELECTOR, '.bp3-card.bp3-elevation-0.sc-futMm.eOzSuM');
+    chart.screenshot("./photo/" + imageName + ".png")
     print("Capture: " + imageName)
 
 bot = telebot.TeleBot(key.API_KEY)
