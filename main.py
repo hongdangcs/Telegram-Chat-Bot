@@ -12,8 +12,8 @@ import time
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_argument("--window-size=1920,1080")
-# stock_driver = webdriver.Chrome(options=chrome_options)
-# stock_driver.get("file:///C:/Users/Education/PycharmProjects/Telegram-Chat-Bot/Stock/index.html")
+stock_driver = webdriver.Chrome(options=chrome_options)
+stock_driver.get("file:///C:/Users/Education/PycharmProjects/Telegram-Chat-Bot/Stock/index.html")
 
 def configDriver(driver, i):
     driver.execute_script("document.querySelectorAll('.bp3-overlay')[1].parentElement.remove();")
@@ -42,9 +42,9 @@ configDriver(fireant_driver, 2)
 0
 print("opened browser")
 
-# def captureStock(imageName):
-#     stock_driver.get_screenshot_as_file("./photo/" + imageName + ".png")
-#     print("Capture: " + imageName)
+def captureStock(imageName):
+    stock_driver.get_screenshot_as_file("./photo/" + imageName + ".png")
+    print("Capture: " + imageName)
 
 def captureFireant(imageName):
     chart = fireant_driver.find_element(By.CSS_SELECTOR, '.bp3-card.bp3-elevation-0.sc-futMm.eOzSuM');
@@ -59,12 +59,12 @@ def send_welcome(message):
     bot.reply_to(message, "/help for help")
 
 
-# @bot.message_handler(commands=['stock'])
-# def stock_image(message):
-#     photoName = str(message.chat.id);
-#     captureStock(photoName)
-#     stock_photo = open("photo/" + photoName + ".png", 'rb');
-#     bot.send_photo(message.chat.id, stock_photo);
+@bot.message_handler(commands=['stock'])
+def stock_image(message):
+    photoName = str(message.chat.id);
+    captureStock(photoName)
+    stock_photo = open("photo/" + photoName + ".png", 'rb');
+    bot.send_photo(message.chat.id, stock_photo);
 
 @bot.message_handler(commands=['fireant'])
 def stock_image(message):
