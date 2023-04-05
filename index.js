@@ -37,7 +37,7 @@ puppeteer.launch({
         await delay(5000);
         const input = await tradingviewPage.$$('.tv-control-material-input');
         await input[0].type('hongdang2k1@gmail.com');
-        await input[1].type('hongdango4qifa');
+        await input[1].type('mzx9Z$3HAbP#c!k');
 
         await delay(1000);
         await (await tradingviewPage.$$('.tv-button'))[1].click();
