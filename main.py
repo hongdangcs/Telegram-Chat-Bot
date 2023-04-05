@@ -55,6 +55,7 @@ def config_tradingview(driver, timeControl):
         time.sleep(1)
 
     driver.get("https://www.tradingview.com/chart/Z2D2ibVU/")
+    time.sleep(5)
     driver.execute_script("document.querySelector('body').lastChild.remove();")
 
 
