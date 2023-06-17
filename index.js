@@ -20,8 +20,7 @@ puppeteer.launch({
         browser = br;
         browser = await puppeteer.launch({headless: false});
         stockPage = await browser.newPage();
-        // await stockPage.goto('file://C:\\Users\\Education\\PycharmProjects\\Telegram-Chat-Bot\\Stock\\index.html');
-        await stockPage.goto('file://C:\\Users\\Education\\PycharmProjects\\Telegram-Chat-Bot\\Stock\\index.html');
+        await stockPage.goto('https://hongdangcseiu.github.io/Telegram-Chat-Bot/');
         tradingviewPage = await browser.newPage();
         await tradingviewPage.goto('https://www.tradingview.com/');
         await delay(5000);
@@ -56,22 +55,19 @@ async function captureTradingView(chatID, imageName, symbol, time) {
     await (await page.$$('.value-gwXludjS'))[2].click();
     await delay(500);
     await (await page.$$('.labelRow-jFqVJoPk'))[time].click();
-    await delay(500);
+    await delay(1000);
     page.evaluate("document.querySelector('body').lastChild.remove();");
     (await page.$(".chart-container-border")).screenshot({path: `photo/${imageName}.png`});
-    await delay(500);
-    /*
-        await stockPage.screenshot({path: 'photo/Stock' + chatID + '.png'});
-        const image1 = await Jimp.read('photo/Stock' + chatID + '.png');
-        const image2 = await Jimp.read(`photo/${imageName}.png`);
-        image1.resize(image2.bitmap.width, image2.bitmap.height);
-        const mergedImage = new Jimp(image1.bitmap.width, image1.bitmap.height + image2.bitmap.height);
+    await delay(1000);
 
-        mergedImage.composite(image1, 0, 0);
-        mergedImage.composite(image2, 0, image1.bitmap.height);
-        mergedImage.write('photo/merged' + chatID + '.png');
-    */
-    //bot.sendPhoto(chatID, `photo/${imageName}.png`, {caption: "Here we go!"});
+    const price = await page.$$('.valueValue-l31H9iuA');
+    const open = await page.evaluate(el => el.textContent, price[1]);
+    const high = await page.evaluate(el => el.textContent, price[2]);
+    const low = await page.evaluate(el => el.textContent, price[3]);
+    const close = await page.evaluate(el => el.textContent, price[4]);
+
+    await bot.sendMessage(chatID, 'Open: '+ open+'\nHigh: '+ high+'\nLow: '+ low+'\nClose: '+ close)
+
     await bot.sendPhoto(chatID, `photo/${imageName}.png`, {caption: "Here we go!"});
     await page.close();
 }
