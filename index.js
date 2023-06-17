@@ -18,25 +18,27 @@ puppeteer.launch({
 })
     .then(async (br) => {
         browser = br;
-        //browser = await puppeteer.launch({headless: false});
+        browser = await puppeteer.launch({headless: false});
         stockPage = await browser.newPage();
+        // await stockPage.goto('file://C:\\Users\\Education\\PycharmProjects\\Telegram-Chat-Bot\\Stock\\index.html');
         await stockPage.goto('file://C:\\Users\\Education\\PycharmProjects\\Telegram-Chat-Bot\\Stock\\index.html');
         tradingviewPage = await browser.newPage();
         await tradingviewPage.goto('https://www.tradingview.com/');
-        await delay(20000);
+        await delay(5000);
 
         await (await tradingviewPage.$('.tv-header__user-menu-button--anonymous')).click();
-        await delay(5000);
+        await delay(2000);
         await (await tradingviewPage.$$('.item-jFqVJoPk'))[1].click();
-        await delay(5000);
-        await (await tradingviewPage.$('.tv-signin-dialog__toggle-email')).click();
-        await delay(5000);
-        const input = await tradingviewPage.$$('.tv-control-material-input');
-        await input[0].type(process.env.email);
-        await input[1].type(process.env.password);
+        await delay(2000);
+        await (await tradingviewPage.$('.emailButton-nKAw8Hvt')).click();
+        await delay(2000);
+        //const input = await tradingviewPage.$$('.tv-control-material-input');
+        await (await tradingviewPage.$('#id_username')).type(process.env.email);
+        await (await tradingviewPage.$('#id_password')).type(process.env.password);
+        //await input[1].type(process.env.password);
 
         await delay(1000);
-        await (await tradingviewPage.$$('.tv-button'))[1].click();
+        await (await tradingviewPage.$('button.button-D4RPB3ZC')).click();
 
         console.log("Page loaded successfully");
     });
@@ -47,9 +49,10 @@ function delay(time) {
 
 async function captureTradingView(chatID, imageName, symbol, time) {
     let page = await browser.newPage();
+    await page.setViewport({width: 1920, height: 1080});
     await page.goto("https://www.tradingview.com/chart/Z2D2ibVU/?symbol=" + symbol);
+    await page.setViewport({width: 1920, height: 1080});
     await delay(500);
-    //await page.mouse.click(270, 21);
     await (await page.$$('.value-gwXludjS'))[2].click();
     await delay(500);
     await (await page.$$('.labelRow-jFqVJoPk'))[time].click();
@@ -57,25 +60,25 @@ async function captureTradingView(chatID, imageName, symbol, time) {
     page.evaluate("document.querySelector('body').lastChild.remove();");
     (await page.$(".chart-container-border")).screenshot({path: `photo/${imageName}.png`});
     await delay(500);
+    /*
+        await stockPage.screenshot({path: 'photo/Stock' + chatID + '.png'});
+        const image1 = await Jimp.read('photo/Stock' + chatID + '.png');
+        const image2 = await Jimp.read(`photo/${imageName}.png`);
+        image1.resize(image2.bitmap.width, image2.bitmap.height);
+        const mergedImage = new Jimp(image1.bitmap.width, image1.bitmap.height + image2.bitmap.height);
 
-    await stockPage.screenshot({path: 'photo/Stock' + chatID + '.png'});
-
-    const image1 = await Jimp.read('photo/Stock' + chatID + '.png');
-    const image2 = await Jimp.read(`photo/${imageName}.png`);
-    image1.resize(image2.bitmap.width, image2.bitmap.height);
-    const mergedImage = new Jimp(image1.bitmap.width, image1.bitmap.height + image2.bitmap.height);
-
-    mergedImage.composite(image1, 0, 0);
-    mergedImage.composite(image2, 0, image1.bitmap.height);
-    mergedImage.write('photo/merged' + chatID + '.png');
-
+        mergedImage.composite(image1, 0, 0);
+        mergedImage.composite(image2, 0, image1.bitmap.height);
+        mergedImage.write('photo/merged' + chatID + '.png');
+    */
     //bot.sendPhoto(chatID, `photo/${imageName}.png`, {caption: "Here we go!"});
-    bot.sendPhoto(chatID, `photo/merged${chatID}.png`, {caption: "Here we go!"});
+    await bot.sendPhoto(chatID, `photo/${imageName}.png`, {caption: "Here we go!"});
     await page.close();
 }
 
-async function captureTradingViewAllTime(imageName, chatId){
+async function captureTradingViewAllTime(imageName, chatId) {
     let page = await browser.newPage();
+    await page.setViewport({width: 1920, height: 1080});
     await page.goto("https://www.tradingview.com/chart/Z2D2ibVU/?symbol=HOSE%3AVNINDEX");
     await delay(500);
 
@@ -84,34 +87,20 @@ async function captureTradingViewAllTime(imageName, chatId){
     await (await page.$$('.labelRow-jFqVJoPk'))[6].click();
     await delay(500);
     page.evaluate("document.querySelector('body').lastChild.remove();");
+
     (await page.$(".chart-container-border")).screenshot({path: `photo/6${imageName}.png`});
-    await delay(500);
+    await delay(1000);
 
     const image1 = await Jimp.read(`photo/6${imageName}.png`);
-    Jimp.loadFont(Jimp.FONT_SANS_64_BLACK)
-        .then(font => {
-            image1.print(font, image1.bitmap.width-250, image1.bitmap.height-80, "VNI 1h")
-            return image1
-        }).then(image1 => {
-        return image1.write(`photo/6${imageName}.png`)
-    })
-
     await (await page.$$('.value-gwXludjS'))[2].click();
     await delay(500);
     await (await page.$$('.labelRow-jFqVJoPk'))[9].click();
     await delay(500);
     page.evaluate("document.querySelector('body').lastChild.remove();");
     (await page.$(".chart-container-border")).screenshot({path: `photo/9${imageName}.png`});
-    await delay(500);
+    await delay(1000);
 
     const image2 = await Jimp.read(`photo/9${imageName}.png`);
-    Jimp.loadFont(Jimp.FONT_SANS_64_BLACK)
-        .then(font => {
-            image2.print(font, image2.bitmap.width-250, image2.bitmap.height-80, "VNI 4h")
-            return image2
-        }).then(image2 => {
-        return image2.write(`photo/9${imageName}.png`)
-    })
 
     await (await page.$$('.value-gwXludjS'))[2].click();
     await delay(500);
@@ -119,16 +108,9 @@ async function captureTradingViewAllTime(imageName, chatId){
     await delay(500);
     page.evaluate("document.querySelector('body').lastChild.remove();");
     (await page.$(".chart-container-border")).screenshot({path: `photo/10${imageName}.png`});
-    await delay(500);
+    await delay(1000);
 
     const image3 = await Jimp.read(`photo/10${imageName}.png`);
-    Jimp.loadFont(Jimp.FONT_SANS_64_BLACK)
-        .then(font => {
-            image3.print(font, image3.bitmap.width-250, image3.bitmap.height-80, "VNI 1d")
-            return image3
-        }).then(image3 => {
-        return image3.write(`photo/10${imageName}.png`)
-    })
 
     await (await page.$$('.value-gwXludjS'))[2].click();
     await delay(500);
@@ -136,23 +118,16 @@ async function captureTradingViewAllTime(imageName, chatId){
     await delay(500);
     page.evaluate("document.querySelector('body').lastChild.remove();");
     (await page.$(".chart-container-border")).screenshot({path: `photo/11${imageName}.png`});
-    await delay(500);
+    await delay(1000);
 
     const image4 = await Jimp.read(`photo/11${imageName}.png`);
-    Jimp.loadFont(Jimp.FONT_SANS_64_BLACK)
-        .then(font => {
-            image4.print(font, image4.bitmap.width-250, image4.bitmap.height-80, "VNI 1w")
-            return image4
-        }).then(image4 => {
-        return image4.write(`photo/11${imageName}.png`)
-    })
 
-        const mergedImage = new Jimp(image1.bitmap.width, image1.bitmap.height + image2.bitmap.height);
+    const mergedImage = new Jimp(image1.bitmap.width, image1.bitmap.height + image2.bitmap.height);
 
     mergedImage.composite(image1, 0, 0);
     mergedImage.composite(image2, 0, image1.bitmap.height);
 
-        const mergedImage2 = new Jimp(image3.bitmap.width, image3.bitmap.height + image4.bitmap.height);
+    const mergedImage2 = new Jimp(image3.bitmap.width, image3.bitmap.height + image4.bitmap.height);
 
     mergedImage2.composite(image3, 0, 0);
     mergedImage2.composite(image4, 0, image3.bitmap.height);
@@ -221,10 +196,6 @@ bot.on('message', (msg) => {
             let imageName = path + msg.chat.id;
             captureTradingView(msg.chat.id, imageName, path, timeInterval);
         }
-        console.log(before);
-        console.log(path);
-        console.log(rest);
-        console.log(timeInterval);
     }
 
 
@@ -293,6 +264,10 @@ bot.onText(/\/tradingchart/, async (msg) => {
 bot.onText(/\/sendpic/, (msg) => {
     bot.sendPhoto(msg.chat.id, "photo/webpage.png", {caption: "Here we go ! \nThis is just a caption "});
     console.log(msg.chat.id);
+});
+
+bot.onText(/\/anh/, (msg) => {
+    bot.sendMessage(msg.chat.id, "Anh yeu em<3")
 });
 
 process.on('SIGINT', () => {
