@@ -18,7 +18,7 @@ puppeteer.launch({
 })
     .then(async (br) => {
         browser = br;
-        browser = await puppeteer.launch({headless: false});
+        //browser = await puppeteer.launch({headless: false});
         stockPage = await browser.newPage();
         await stockPage.goto('https://hongdangcseiu.github.io/Telegram-Chat-Bot/');
         tradingviewPage = await browser.newPage();
@@ -31,10 +31,8 @@ puppeteer.launch({
         await delay(2000);
         await (await tradingviewPage.$('.emailButton-nKAw8Hvt')).click();
         await delay(2000);
-        //const input = await tradingviewPage.$$('.tv-control-material-input');
         await (await tradingviewPage.$('#id_username')).type(process.env.email);
         await (await tradingviewPage.$('#id_password')).type(process.env.password);
-        //await input[1].type(process.env.password);
 
         await delay(1000);
         await (await tradingviewPage.$('button.button-D4RPB3ZC')).click();
@@ -56,6 +54,10 @@ async function captureTradingView(chatID, imageName, symbol, time) {
     await delay(500);
     await (await page.$$('.labelRow-jFqVJoPk'))[time].click();
     await delay(1000);
+
+    await (await page.$('#header-toolbar-screenshot')).click();
+    await delay(1000);
+
     page.evaluate("document.querySelector('body').lastChild.remove();");
     (await page.$(".chart-container-border")).screenshot({path: `photo/${imageName}.png`});
     await delay(1000);
@@ -65,8 +67,10 @@ async function captureTradingView(chatID, imageName, symbol, time) {
     const high = await page.evaluate(el => el.textContent, price[2]);
     const low = await page.evaluate(el => el.textContent, price[3]);
     const close = await page.evaluate(el => el.textContent, price[4]);
+    const k = await page.evaluate(el => el.textContent, price[18]);
+    const d = await page.evaluate(el => el.textContent, price[19]);
 
-    await bot.sendMessage(chatID, 'Open: '+ open+'\nHigh: '+ high+'\nLow: '+ low+'\nClose: '+ close)
+    await bot.sendMessage(chatID, 'Open: '+ open+'\nHigh: '+ high+'\nLow: '+ low+'\nClose: '+ close+'\nK: '+ k+'\nD: '+ d)
 
     await bot.sendPhoto(chatID, `photo/${imageName}.png`, {caption: "Here we go!"});
     await page.close();
