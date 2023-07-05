@@ -18,7 +18,7 @@ puppeteer.launch({
 })
     .then(async (br) => {
         browser = br;
-        //browser = await puppeteer.launch({headless: false});
+        browser = await puppeteer.launch({headless: false});
         stockPage = await browser.newPage();
         await stockPage.goto('https://hongdangcseiu.github.io/Telegram-Chat-Bot/');
         tradingviewPage = await browser.newPage();
@@ -37,6 +37,21 @@ puppeteer.launch({
         await delay(1000);
         await (await tradingviewPage.$('button.button-D4RPB3ZC')).click();
 
+        await delay(15000);
+
+        // open pine script
+        let page = await browser.newPage();
+        await page.setViewport({width: 1920, height: 1080});
+        await page.goto("https://www.tradingview.com/chart/Z2D2ibVU/");
+        await delay(5000);
+        await (await page.$$('.button-cBEgKMWJ'))[0].click();
+        await delay(500);
+        await (await page.$$('.item-jFqVJoPk'))[0].click();
+        await delay(500);
+        await page.mouse.click(942, 408);
+        await delay(5000);
+        await page.close();
+
         console.log("Page loaded successfully");
     });
 
@@ -44,7 +59,42 @@ function delay(time) {
     return new Promise(resolve => setTimeout(resolve, time));
 }
 
+async function getChartInfor(chatID, page) {
+
+
+    const price = await page.$$('.valueValue-l31H9iuA');
+    const open = await page.evaluate(el => el.textContent, price[1]);
+    const high = await page.evaluate(el => el.textContent, price[2]);
+    const low = await page.evaluate(el => el.textContent, price[3]);
+    const close = await page.evaluate(el => el.textContent, price[4]);
+    const tenkanSen = await page.evaluate(el => el.textContent, price[11]);
+    const kijunSen = await page.evaluate(el => el.textContent, price[12]);
+    const chikuSpan = await page.evaluate(el => el.textContent, price[13]);
+    const senkouA = await page.evaluate(el => el.textContent, price[14]);
+    const senkouB = await page.evaluate(el => el.textContent, price[15]);
+    const k = await page.evaluate(el => el.textContent, price[18]);
+    const d = await page.evaluate(el => el.textContent, price[19]);
+
+    await bot.sendMessage(chatID, 'Open: ' + open + '\nHigh: ' + high + '\nLow: ' + low + '\nClose: ' + close
+        + '\nTenkanSen: ' + tenkanSen + '\nKijunSen: ' + kijunSen + '\nChiku Span: ' + chikuSpan + '\nSenkou A: '
+        + senkouA + '\nSenkou B: ' + senkouB + '\nK: ' + k + '\nD: ' + d);
+
+    let mystr = 'to night';
+
+    await page.evaluate(() => {
+        let priceVar = document.querySelectorAll('.mtk12');
+        priceVar[0].innerHTML = '4.56';
+        priceVar[1].innerHTML = mystr;
+    });
+
+
+    await delay(5000);
+
+}
+
 async function captureTradingView(chatID, imageName, symbol, time) {
+
+    // open browser
     let page = await browser.newPage();
     await page.setViewport({width: 1920, height: 1080});
     await page.goto("https://www.tradingview.com/chart/Z2D2ibVU/?symbol=" + symbol);
@@ -55,24 +105,46 @@ async function captureTradingView(chatID, imageName, symbol, time) {
     await (await page.$$('.labelRow-jFqVJoPk'))[time].click();
     await delay(1000);
 
-    await (await page.$('#header-toolbar-screenshot')).click();
-    await delay(1000);
+    await (await page.$$('.button-I_wb5FjE'))[0].click();
+    await delay(500);
+    await (await page.$$('.button-I_wb5FjE'))[2].click();
+    await delay(500);
+    //
+    // await (await page.$('#header-toolbar-screenshot')).click();
+    // await delay(1000);
 
     page.evaluate("document.querySelector('body').lastChild.remove();");
-    (await page.$(".chart-container-border")).screenshot({path: `photo/${imageName}.png`});
+    await delay(2000);
+
+    // zoom chart
+    await page.keyboard.down('ControlLeft');
+    for (let i = 0; i < 7; i++) {
+        await page.keyboard.press('ArrowUp');
+        await delay(300);
+    }
+    await page.keyboard.up('ControlLeft');
+    await page.keyboard.down('AltLeft');
+    // await page.keyboard.down('ShiftLeft');
+    await page.keyboard.press('KeyR');
+    // await page.keyboard.up('ShiftLeft');
+    await page.keyboard.up('AltLeft');
+
+
     await delay(1000);
 
-    const price = await page.$$('.valueValue-l31H9iuA');
-    const open = await page.evaluate(el => el.textContent, price[1]);
-    const high = await page.evaluate(el => el.textContent, price[2]);
-    const low = await page.evaluate(el => el.textContent, price[3]);
-    const close = await page.evaluate(el => el.textContent, price[4]);
-    const k = await page.evaluate(el => el.textContent, price[18]);
-    const d = await page.evaluate(el => el.textContent, price[19]);
+    // take screenshot
+    const chartElement = await page.$(".chart-container-border");
+    await delay(1000);
+    await chartElement.screenshot({path: `photo/${imageName}.png`});
+    await delay(1000);
+    //
+    // await (await page.$$('.button-xNqEcuN2'))[8].click();
+    // await delay(1000);
 
-    await bot.sendMessage(chatID, 'Open: '+ open+'\nHigh: '+ high+'\nLow: '+ low+'\nClose: '+ close+'\nK: '+ k+'\nD: '+ d)
-
-    await bot.sendPhoto(chatID, `photo/${imageName}.png`, {caption: "Here we go!"});
+    await getChartInfor(chatID, page);
+    await delay(2000);
+    await bot.sendPhoto(chatID, `photo/${imageName}.png`, {caption: ""});
+    console.log(`photo/${imageName}.png`)
     await page.close();
 }
 
@@ -266,9 +338,6 @@ bot.onText(/\/sendpic/, (msg) => {
     console.log(msg.chat.id);
 });
 
-bot.onText(/\/anh/, (msg) => {
-    bot.sendMessage(msg.chat.id, "Anh yeu em<3")
-});
 
 process.on('SIGINT', () => {
     console.log("Closing browser...");

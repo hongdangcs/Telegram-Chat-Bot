@@ -1,0 +1,122 @@
+//@version=5
+
+nowK = 89.34
+nowD = 89.77
+
+indicator(title="My Scripts", shorttitle="SCRIPTS")
+conversionPeriods = input.int(9, minval=1, title="Conversion Line Length")
+basePeriods = input.int(26, minval=1, title="Base Line Length")
+laggingSpan2Periods = input.int(52, minval=1, title="Leading Span B Length")
+displacement = input.int(26, minval=1, title="Lagging Span")
+donchian(len) => math.avg(ta.lowest(len), ta.highest(len))
+conversionLine = donchian(conversionPeriods)
+baseLine = donchian(basePeriods)
+leadLine1 = math.avg(conversionLine, baseLine)
+leadLine2 = donchian(laggingSpan2Periods)
+//plot(conversionLine, color=#2962FF, title="Conversion Line", display = display.none)
+//plot(baseLine, color=#B71C1C, title="Base Line", display = display.none)
+//plot(close, offset = -displacement + 1, color=#43A047, title="Lagging Span", display = display.none)
+//p1 = plot(leadLine1, offset = displacement - 1, color=#A5D6A7,
+//	 title="Leading Span A", display = display.none)
+//p2 = plot(leadLine2, offset = displacement - 1, color=#EF9A9A,
+//	 title="Leading Span B", display = display.none)
+//plot(leadLine1 > leadLine2 ? leadLine1 : leadLine2, offset = displacement - 1, title = "Kumo Cloud Upper Line", display = display.none)
+//plot(leadLine1 < leadLine2 ? leadLine1 : leadLine2, offset = displacement - 1, title = "Kumo Cloud Lower Line", display = display.none)
+//fill(p1, p2, color = leadLine1 > leadLine2 ? color.rgb(67, 160, 71, 90) : color.rgb(244, 67, 54, 90))
+
+//print table
+
+// printTable(txt) =>
+//     var table t = table.new(position.middle_right, 1, 1)
+//     table.cell(t, 0, 0, txt, text_halign = text.align_right, bgcolor = color.yellow)
+// printTable(
+//   str.format("{0,date,HH:mm:ss yyyy.MM.dd}", time))
+
+//Stock RSI full at v.28
+
+smoothK = input.int(3, "K", minval=1)
+smoothD = input.int(3, "D", minval=1)
+lengthRSI = input.int(14, "RSI Length", minval=1)
+lengthStoch = input.int(14, "Stochastic Length", minval=1)
+src = input(close, title="RSI Source")
+rsi1 = ta.rsi(src, lengthRSI)
+k = ta.sma(ta.stoch(rsi1, rsi1, rsi1, lengthStoch), smoothK)
+d = ta.sma(k, smoothD)
+
+
+// ma_fast = ta.sma(close, 50)
+// ma_slow = ta.sma(close, 200)
+
+var dates = array.new_string()
+// var type  = array.new_string()
+// var fast  = array.new_float()
+// var slow  = array.new_float()
+
+// var logMessage = ""
+
+
+var sameDay = 0
+var float closeToCompare = 0
+var closeArray  = array.new_float()
+var int increaseAfterOne = 0
+var int increaseAfterTwo = 0
+var int increaseAfterThree = 0
+var int decreaseAfterOne = 0
+var int decreaseAfterTwo = 0
+var int decreaseAfterThree = 0
+
+array.push(closeArray, close)
+
+if(math.abs(nowK-k)<5 and k<d and math.abs(nowD - d)<5)
+    array.push(dates, str.format("{0,date,HH:mm:ss yyyy.MM.dd}", time))
+    sameDay:=sameDay+1
+
+    if(closeToCompare != 0 and array.size(closeArray) >=3)
+        if closeToCompare > array.get(closeArray, 0)
+            decreaseAfterOne := decreaseAfterOne+1
+        else
+            increaseAfterOne := increaseAfterOne +1
+        if closeToCompare > array.get(closeArray, 1)
+            decreaseAfterTwo := decreaseAfterTwo+1
+        else
+            increaseAfterTwo := increaseAfterTwo +1
+        if closeToCompare > array.get(closeArray, 2)
+            decreaseAfterThree := decreaseAfterThree+1
+        else
+            increaseAfterThree := increaseAfterThree +1
+
+
+    closeToCompare:= close
+    closeArray.clear()
+
+plot(sameDay)
+plot(increaseAfterOne, color=#9aff8cbb, title="Increase after one")
+plot(increaseAfterTwo, color=#44ce44ee, title="Increase after two")
+plot(increaseAfterThree, color=#00b100, title="Increase after three")
+plot(decreaseAfterOne, color=#ffc3c3, title="Decrease after 1")
+plot(decreaseAfterTwo, color=#eb3737de, title="Decrease after 2")
+plot(decreaseAfterThree, color=#bb0000, title="Decrease after 3")
+
+
+// var float tkr = 0
+
+// if barstate.islast
+
+//     alert_text = "compare\n"
+//     // for i = 0 to array.size(closeArray) - 1
+//     //     if str.length(alert_text) <4000
+//     //         alert_text += str.tostring(array.get(closeArray, i)) + "\n"
+
+//     alert_text+= "increase aft one: " + str.tostring(increaseAfterOne) + "\n"
+//     alert_text+= "increase aft two: " + str.tostring(increaseAfterTwo) + "\n"
+//     alert_text+= "increase aft three: " + str.tostring(increaseAfterThree) + "\n"
+//     alert_text+= "Decrease aftr one: " + str.tostring(decreaseAfterOne) + "\n"
+//     alert_text+= "decrease aft two: " + str.tostring(decreaseAfterTwo) + "\n"
+//     alert_text+= "decrease aft three: " + str.tostring(decreaseAfterThree) + "\n"
+
+//     alert(alert_text, freq = alert.freq_once_per_bar)
+
+//     // karray = str.tostring(k)
+//     // pos = str.pos(karray, ".")
+//     // tkr := str.substring(karray, 0, pos+3)
+//     // printTable(tkr)
