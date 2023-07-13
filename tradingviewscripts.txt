@@ -1,7 +1,12 @@
 //@version=5
 
-nowK = 89.34
-nowD = 89.77
+nowK = 90
+nowD = 87
+nowConversion = 30761
+nowBase = 30697
+nowLeadA = 30729
+nowLeadB = 30697
+nowClose = 30992
 
 indicator(title="My Scripts", shorttitle="SCRIPTS")
 conversionPeriods = input.int(9, minval=1, title="Conversion Line Length")
@@ -13,16 +18,16 @@ conversionLine = donchian(conversionPeriods)
 baseLine = donchian(basePeriods)
 leadLine1 = math.avg(conversionLine, baseLine)
 leadLine2 = donchian(laggingSpan2Periods)
-//plot(conversionLine, color=#2962FF, title="Conversion Line", display = display.none)
-//plot(baseLine, color=#B71C1C, title="Base Line", display = display.none)
+// plot(conversionLine, color=#2962FF, display = display.none, title="Conversion Line")
+// plot(baseLine, color=#B71C1C, display = display.none, title="Base Line")
 //plot(close, offset = -displacement + 1, color=#43A047, title="Lagging Span", display = display.none)
-//p1 = plot(leadLine1, offset = displacement - 1, color=#A5D6A7,
-//	 title="Leading Span A", display = display.none)
-//p2 = plot(leadLine2, offset = displacement - 1, color=#EF9A9A,
-//	 title="Leading Span B", display = display.none)
-//plot(leadLine1 > leadLine2 ? leadLine1 : leadLine2, offset = displacement - 1, title = "Kumo Cloud Upper Line", display = display.none)
-//plot(leadLine1 < leadLine2 ? leadLine1 : leadLine2, offset = displacement - 1, title = "Kumo Cloud Lower Line", display = display.none)
-//fill(p1, p2, color = leadLine1 > leadLine2 ? color.rgb(67, 160, 71, 90) : color.rgb(244, 67, 54, 90))
+// p1 = plot(leadLine1, offset = displacement - 1, color=#A5D6A7,
+// 	 title="Leading Span A")
+// p2 = plot(leadLine2, offset = displacement - 1, color=#EF9A9A,
+// 	 title="Leading Span B")
+// plot(leadLine1 > leadLine2 ? leadLine1 : leadLine2, offset = displacement - 1, title = "Kumo Cloud Upper Line", display = display.none)
+// plot(leadLine1 < leadLine2 ? leadLine1 : leadLine2, offset = displacement - 1, title = "Kumo Cloud Lower Line", display = display.none)
+// fill(p1, p2, color = leadLine1 > leadLine2 ? color.rgb(67, 160, 71, 90) : color.rgb(244, 67, 54, 90))
 
 //print table
 
@@ -48,6 +53,12 @@ d = ta.sma(k, smoothD)
 // ma_slow = ta.sma(close, 200)
 
 var dates = array.new_string()
+var leadA = array.new_float()
+var leadB = array.new_float()
+
+array.push(leadA, leadLine1)
+array.push(leadB, leadLine2)
+
 // var type  = array.new_string()
 // var fast  = array.new_float()
 // var slow  = array.new_float()
@@ -67,7 +78,18 @@ var int decreaseAfterThree = 0
 
 array.push(closeArray, close)
 
-if(math.abs(nowK-k)<5 and k<d and math.abs(nowD - d)<5)
+similarKD = nowK < nowD ? k<d:k>d
+similarKRange = nowK<20 ? k<20 : nowK > 80 ? k>80 : k>= 20 and k<= 80
+similarCB = nowConversion > nowBase ? conversionLine > baseLine : conversionLine < baseLine
+availableCloud = array.size(leadA) > 26 ? true : false
+
+similarCloud = not availableCloud ? false : (nowClose > nowLeadA and nowClose > nowLeadB) ? (close > array.get(leadA, array.size(leadA) - 26) and close > array.get(leadB, array.size(leadB) - 26)) : (nowClose < nowLeadA and nowClose < nowLeadB) ? (close < array.get(leadA, array.size(leadA) - 26) and close < array.get(leadB, array.size(leadB) - 26)) : ((close < array.get(leadA, array.size(leadA) - 26) and close > array.get(leadB, array.size(leadB) - 26)) or (close > array.get(leadA, array.size(leadA) - 26) and close < array.get(leadB, array.size(leadB) - 26)))
+
+
+similar = math.abs(nowK-k)<5 and k<d and math.abs(nowD - d)<5
+bgcolor(similarCloud and similarCB and similarKD and similarKRange ? color.rgb(67, 160, 71, 90) : color.rgb(244, 67, 54, 100))
+
+if(similarCloud and similarCB and similarKD and similarKRange)
     array.push(dates, str.format("{0,date,HH:mm:ss yyyy.MM.dd}", time))
     sameDay:=sameDay+1
 
@@ -100,7 +122,7 @@ plot(decreaseAfterThree, color=#bb0000, title="Decrease after 3")
 
 // var float tkr = 0
 
-// if barstate.islast
+if barstate.islast
 
 //     alert_text = "compare\n"
 //     // for i = 0 to array.size(closeArray) - 1
@@ -114,7 +136,9 @@ plot(decreaseAfterThree, color=#bb0000, title="Decrease after 3")
 //     alert_text+= "decrease aft two: " + str.tostring(decreaseAfterTwo) + "\n"
 //     alert_text+= "decrease aft three: " + str.tostring(decreaseAfterThree) + "\n"
 
-//     alert(alert_text, freq = alert.freq_once_per_bar)
+    var alert_text = "alert !!!"
+
+    alert(alert_text, freq = alert.freq_once_per_bar)
 
 //     // karray = str.tostring(k)
 //     // pos = str.pos(karray, ".")
