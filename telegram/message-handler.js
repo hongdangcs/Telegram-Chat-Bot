@@ -1,5 +1,6 @@
 const { tradingView } = require("../configs");
 const chartData = require("../tradingview/chart-data");
+const fs = require("fs");
 
 module.exports = (bot, browser) => {
   const chatStates = {};
@@ -39,22 +40,43 @@ module.exports = (bot, browser) => {
       return;
     } else if (timeIntervals.hasOwnProperty(msg.text)) {
       chatState.timeInterval = msg.text;
-      if (!chatState.coin) {
-        bot.sendMessage(chatId, "Choose 1 first");
+      const timeNow = new Date();
+      if (chatState.time && timeNow - chatState.time < 30000) {
+        bot.sendMessage(
+          chatId,
+          "Too many requests, please wait for last request to finish"
+        );
         return;
       }
-      const imgName = `${chatId}_${chatState.coin}_${chatState.timeInterval}`;
-      const responData = await chartData(
-        browser,
-        stock[chatState.coin],
-        timeIntervals[chatState.timeInterval],
-        imgName
-      );
-      bot.sendMessage(
-        chatId,
-        `Price increase: 1(${responData.increase1}/${responData.decrease1}), 2(${responData.increase2}/${responData.decrease2}), 3(${responData.increase3}/${responData.decrease3})`
-      );
-      bot.sendPhoto(chatId, `./screenshots/${imgName}.png`);
+      chatState.time = timeNow;
+      try {
+        if (!chatState.coin) {
+          bot.sendMessage(chatId, "Choose 1 first");
+          return;
+        }
+        const imgName = `${chatId}_${chatState.coin}_${chatState.timeInterval}`;
+        const responData = await chartData(
+          browser,
+          stock[chatState.coin],
+          timeIntervals[chatState.timeInterval],
+          imgName
+        );
+        bot.sendMessage(
+          chatId,
+          `Price increase: 1(${responData.increase1}/${responData.decrease1}), 2(${responData.increase2}/${responData.decrease2}), 3(${responData.increase3}/${responData.decrease3})`
+        );
+        bot.sendPhoto(chatId, `./screenshots/${imgName}.png`);
+
+        // Delete the image after sending
+        setTimeout(() => {
+          fs.unlinkSync(`./screenshots/${imgName}.png`);
+        }, 1000);
+      } catch (error) {
+        console.log(error);
+        bot.sendMessage(chatId, "Something went wrong");
+        return;
+      }
+
       return;
     }
     bot.sendMessage(chatId, "Invalid input");

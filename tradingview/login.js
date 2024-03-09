@@ -15,6 +15,9 @@ async function tradingViewLogin(browser, sessionid_sign, sessionid) {
   await page.setCookie(...cookies);
   await new Promise((resolve) => setTimeout(resolve, 3000));
   await saveSettings(page);
+  // modify(page).then((data) => {
+  //   console.log(data);
+  // });
   await page.close();
 }
 

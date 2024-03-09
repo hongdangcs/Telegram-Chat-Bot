@@ -3,8 +3,10 @@ const priceDataChange = require("./price-data-change");
 
 async function modify(page) {
   try {
-    await new Promise((r) => setTimeout(r, 3000));
+    await new Promise((r) => setTimeout(r, 1000));
     let priceDataValue = await priceData(page);
+    await new Promise((r) => setTimeout(r, 1000));
+
     let buttonCoordinates = await getCoordinates(
       page,
       'div[data-name="legend-source-item"] div[data-name="legend-source-title"]'
@@ -27,6 +29,7 @@ async function modify(page) {
       'div[data-name="indicator-properties-dialog"] input'
     );
     await new Promise((r) => setTimeout(r, 300));
+    console.log(priceDataValue);
 
     await typing(inputs[0], priceDataValue.K);
     await typing(inputs[1], priceDataValue.D);
