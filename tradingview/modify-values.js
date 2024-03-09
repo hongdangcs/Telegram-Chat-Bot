@@ -1,19 +1,61 @@
-async function modify(page) {
-  await page.goto("https://www.tradingview.com/chart/Z2D2ibVU/");
+const priceData = require("./price-data");
+const priceDataChange = require("./price-data-change");
+
+async function modify(page, url) {
+  await page.goto(url);
   await new Promise((r) => setTimeout(r, 7000));
-  let buttonCoordinates = await page.evaluate(() => {
-    let button = document
-      .querySelectorAll(
-        'div[data-name="legend-source-item"] div[data-name="legend-source-title"]'
-      )[1]
-      .getBoundingClientRect();
+  let priceDataValue = await priceData(page);
+  let buttonCoordinates = await getCoordinates(
+    page,
+    'div[data-name="legend-source-item"] div[data-name="legend-source-title"]'
+  );
+  await new Promise((r) => setTimeout(r, 300));
+  await page.mouse.move(buttonCoordinates.x, buttonCoordinates.y);
+  await new Promise((r) => setTimeout(r, 300));
+  let settingButtonCoordinates = await getCoordinates(
+    page,
+    'div[data-name="legend-source-item"] div[data-name="legend-settings-action"]'
+  );
+  await new Promise((r) => setTimeout(r, 300));
+  await page.mouse.click(
+    settingButtonCoordinates.x,
+    settingButtonCoordinates.y
+  );
+
+  await new Promise((r) => setTimeout(r, 300));
+  let inputs = await page.$$(
+    'div[data-name="indicator-properties-dialog"] input'
+  );
+  await new Promise((r) => setTimeout(r, 300));
+
+  await typing(inputs[0], priceDataValue.K);
+  await typing(inputs[1], priceDataValue.D);
+  await typing(inputs[2], priceDataValue["Conversion Line"]);
+  await typing(inputs[3], priceDataValue["Base Line"]);
+  await typing(inputs[4], priceDataValue["Lead A"]);
+  await typing(inputs[5], priceDataValue["Lead B"]);
+  await typing(inputs[6], priceDataValue.Close);
+  await new Promise((r) => setTimeout(r, 500));
+  await page.click('button[data-name="submit-button"]');
+  await new Promise((r) => setTimeout(r, 5000));
+  let priceChange = await priceDataChange(page);
+  return priceChange;
+}
+
+async function getCoordinates(page, selector) {
+  let buttonCoordinates = await page.evaluate((selector) => {
+    let button = document.querySelectorAll(selector)[1].getBoundingClientRect();
     return {
       x: button.x + button.width / 2,
       y: button.y + button.height / 2,
     };
-  });
-  await new Promise((r) => setTimeout(r, 7000));
-  await page.mouse.move(buttonCoordinates.x, buttonCoordinates.y);
+  }, selector);
+  return buttonCoordinates;
+}
+
+async function typing(inputElement, value) {
+  await inputElement.type(value);
+  await new Promise((r) => setTimeout(r, 150));
 }
 
 module.exports = modify;
