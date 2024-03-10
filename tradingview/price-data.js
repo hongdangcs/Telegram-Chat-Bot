@@ -1,6 +1,6 @@
 async function priceData(page) {
   try {
-    await new Promise((resolve) => setTimeout(resolve, 1200));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     /*
     let buttonObjectTree = await page.evaluate(() => {
       let button = document.querySelector('button[data-name="object_tree"]');
@@ -34,14 +34,7 @@ async function priceData(page) {
     await new Promise((resolve) => setTimeout(resolve, 1200));
     return priceData;
     */
-    const classNameSuffix = await page.evaluate(() => {
-      return document
-        .querySelector('div[data-name="legend"]')
-        .className.split("-")[1]
-        .split(" ")[0];
-    });
-    console.log(classNameSuffix);
-    await new Promise((resolve) => setTimeout(resolve, 800));
+
     const priceArray = await page.evaluate(() => {
       let priceArray = [];
       const classNameSuffix = document

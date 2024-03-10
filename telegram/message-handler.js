@@ -61,12 +61,27 @@ module.exports = (bot, browser) => {
           timeIntervals[chatState.timeInterval],
           imgName
         );
+        let priceIncrease1 =
+          100 *
+          (+responData.increase1 /
+            (+responData.decrease1 + +responData.increase1));
+        priceIncrease1 = priceIncrease1.toFixed(2);
+        let priceIncrease2 =
+          100 *
+          (+responData.increase2 /
+            (+responData.decrease2 + +responData.increase2));
+        priceIncrease2 = priceIncrease2.toFixed(2);
+        let priceIncrease3 =
+          100 *
+          (+responData.increase3 /
+            (+responData.decrease3 + +responData.increase3));
+        priceIncrease3 = priceIncrease3.toFixed(2);
         bot.sendMessage(
           chatId,
-          `Price increase: 1(${responData.increase1}/${responData.decrease1}), 2(${responData.increase2}/${responData.decrease2}), 3(${responData.increase3}/${responData.decrease3})`
+          `Price increase 1: ${priceIncrease1}%(${responData.increase1}/${responData.decrease1})\nPrice increase 2: ${priceIncrease2}%(${responData.increase2}/${responData.decrease2})\nPrice increase 3: ${priceIncrease3}%(${responData.increase3}/${responData.decrease3})`
         );
         bot.sendPhoto(chatId, `./screenshots/${imgName}.png`);
-
+        await new Promise((resolve) => setTimeout(resolve, 3000));
         // Delete the image after sending
         setTimeout(() => {
           fs.unlinkSync(`./screenshots/${imgName}.png`);

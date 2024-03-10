@@ -29,7 +29,6 @@ async function modify(page) {
       'div[data-name="indicator-properties-dialog"] input'
     );
     await new Promise((r) => setTimeout(r, 300));
-    console.log(priceDataValue);
 
     await typing(inputs[0], priceDataValue.K);
     await typing(inputs[1], priceDataValue.D);
