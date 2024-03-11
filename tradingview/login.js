@@ -1,4 +1,5 @@
 const { tradingView } = require("../configs");
+const captureAll = require("./capture-all");
 const modify = require("./modify-values");
 const priceData = require("./price-data");
 const saveSettings = require("./savesettings");
@@ -19,6 +20,13 @@ async function tradingViewLogin(browser, sessionid_sign, sessionid) {
   //   console.log(data);
   // });
   await page.close();
+  // captureAll(
+  //   browser,
+  //   "https://www.tradingview.com/chart/Z2D2ibVU/",
+  //   "SPX"
+  // ).then(() => {
+  //   console.log("data captured");
+  // });
 }
 
 module.exports = tradingViewLogin;

@@ -11,7 +11,7 @@ async function chartData(browser, url, timeInterval, imgName) {
     await captureChart(page, imgName);
     const priceChange = await modify(page);
     await page.close();
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise((resolve) => setTimeout(resolve, 600));
     return priceChange;
   } catch (e) {
     console.log(e);
