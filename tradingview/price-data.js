@@ -82,8 +82,8 @@ async function priceData(page) {
       decrease1plot: priceArray[14],
       decrease2plot: priceArray[15],
       decrease3plot: priceArray[16],
-      K: priceArray[17],
-      D: priceArray[18],
+      K: priceArray[18],
+      D: priceArray[19],
     };
   } catch (e) {
     console.log(e);

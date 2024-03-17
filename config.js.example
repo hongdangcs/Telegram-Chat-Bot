@@ -1,0 +1,23 @@
+module.exports = {
+  tradingView: {
+    login:{
+    sessionid_sign: "tradingview_sessionid_sign",
+    sessionid: "tradingview_sessionid",
+    },
+    stock: {
+      BTC: "https://www.tradingview.com/chart/?symbol=COINBASE%3ABTCUSD",
+      ETH: "https://www.tradingview.com/chart/?symbol=COINBASE%3AETHUSD",
+      LTC: "https://www.tradingview.com/chart/?symbol=COINBASE%3ALTCBTC",
+      VNINDEX: "https://www.tradingview.com/chart/?symbol=HOSE%3AVNINDEX",
+    },
+    timeInterval: {
+      "1h": 9,
+      "4h": 12,
+      "1D": 14,
+      "1W": 15,
+    },
+  },
+  telegram: {
+    botToken: "bottoken",
+  },
+};
