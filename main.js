@@ -7,9 +7,9 @@ const TelegramBot = require("node-telegram-bot-api");
 const messageHandler = require("./telegram/message-handler");
 const token = telegram.botToken;
 const bot = new TelegramBot(token, { polling: true });
-
+var browser;
 (async () => {
-  const browser = await puppeteer.launch({
+  browser = await puppeteer.launch({
     headless: false,
     defaultViewport: { width: 1920, height: 1080 },
     args: ["--no-sandbox"],
@@ -21,3 +21,9 @@ const bot = new TelegramBot(token, { polling: true });
 
   messageHandler(bot, browser);
 })();
+
+process.on("SIGINT", () => {
+  console.log("Caught interrupt signal");
+  browser.close();
+  process.exit();
+});

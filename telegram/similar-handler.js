@@ -2,7 +2,9 @@ const captureChart = require("../tradingview/capture-chart");
 const fs = require("fs");
 
 async function similarHandler(page, bot, chatId) {
-  await page.mouse.click(900, 600);
+  await page.mouse.move(900, 600);
+  await page.mouse.down();
+  await new Promise((resolve) => setTimeout(resolve, 300));
   await page.evaluate(() => {
     var keyDownEvent = new KeyboardEvent("keydown", {
       key: "ArrowLeft",
@@ -30,7 +32,9 @@ async function similarHandler(page, bot, chatId) {
           code: "ArrowLeft",
           which: 37,
         });
-        document.dispatchEvent(keyUpEvent);
+        setTimeout(() => {
+          document.dispatchEvent(keyUpEvent);
+        }, 150);
         return;
       } else {
         requestAnimationFrame(monitorChange);
@@ -46,8 +50,7 @@ async function similarHandler(page, bot, chatId) {
       )[2].innerText;
       return similarValue == highValue;
     }
-    monitorChange();
-    return;
+    return monitorChange();
   });
   await new Promise((resolve) => setTimeout(resolve, 1800));
   await captureChart(page, chatId + "similar");
