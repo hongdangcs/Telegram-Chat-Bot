@@ -56,9 +56,11 @@ async function similarHandler(page, bot, chatId) {
   await captureChart(page, chatId + "similar");
   await new Promise((resolve) => setTimeout(resolve, 600));
   bot.sendPhoto(chatId, `./screenshots/${chatId}similar.png`);
-  bot.sendMessage(chatId, "/similar for next similar date");
+  bot.sendMessage(chatId, "/similar for next similar interval");
   setTimeout(() => {
     fs.unlinkSync(`./screenshots/${chatId}similar.png`);
   }, 1000);
 }
 module.exports = similarHandler;
+
+async function mouseMove(page, x1, x2, y) {}

@@ -26,11 +26,11 @@ async function captureHandler(msg, chatState, chatId, bot, page) {
   priceIncrease3 = priceIncrease3.toFixed(2);
   bot.sendMessage(
     chatId,
-    `1: ${priceIncrease1}% goes up(${responData.increase1}/${responData.decrease1})\n2: ${priceIncrease2}% goes up(${responData.increase2}/${responData.decrease2})\n3: ${priceIncrease3}% goes up(${responData.increase3}/${responData.decrease3})`
+    `1: ${priceIncrease1}% up(${responData.increase1}/${responData.decrease1})\n2: ${priceIncrease2}% up(${responData.increase2}/${responData.decrease2})\n3: ${priceIncrease3}% up(${responData.increase3}/${responData.decrease3})`
   );
   bot.sendPhoto(chatId, `./screenshots/${imgName}.png`);
   await new Promise((resolve) => setTimeout(resolve, 3000));
-  bot.sendMessage(chatId, "/similar for similar date");
+  bot.sendMessage(chatId, "/similar for similar interval");
   setTimeout(() => {
     fs.unlinkSync(`./screenshots/${imgName}.png`);
   }, 1000);
