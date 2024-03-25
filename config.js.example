@@ -1,23 +1,29 @@
 module.exports = {
   tradingView: {
-    login:{
-    sessionid_sign: "tradingview_sessionid_sign",
-    sessionid: "tradingview_sessionid",
+    login: {
+      sessionid_sign: "",
+      sessionid: "",
     },
     stock: {
-      BTC: "https://www.tradingview.com/chart/?symbol=COINBASE%3ABTCUSD",
-      ETH: "https://www.tradingview.com/chart/?symbol=COINBASE%3AETHUSD",
-      LTC: "https://www.tradingview.com/chart/?symbol=COINBASE%3ALTCBTC",
+      SSI: "https://www.tradingview.com/chart/?symbol=HOSE%3ASSI",
+      FPT: "https://www.tradingview.com/chart/?symbol=HOSE%3AFPT",
+      LTC: "https://www.tradingview.com/chart/?symbol=BYBIT%3ALTCUSDT",
       VNINDEX: "https://www.tradingview.com/chart/?symbol=HOSE%3AVNINDEX",
     },
     timeInterval: {
-      "1h": 9,
-      "4h": 12,
-      "1D": 14,
-      "1W": 15,
+      "1h": "1 hour",
+      "4h": "4 hours",
+      "1D": "1 day",
+      "1W": "1 week",
     },
   },
   telegram: {
-    botToken: "bottoken",
+    botToken: "",
+  },
+  ssi: {
+    HubUrl: "wss://fc-datahub.ssi.com.vn/",
+    ApiUrl: "https://fc-data.ssi.com.vn/",
+    consumerID: "",
+    consumerSecret: "",
   },
 };
