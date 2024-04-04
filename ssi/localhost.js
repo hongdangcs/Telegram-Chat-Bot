@@ -8,14 +8,19 @@ const port = 3000;
 
 app.use(cors());
 stockList = streamer.stockList;
+abnormalStocks = streamer.abnormalStocks;
 
 app.get("/", async (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+  res.send(stockList);
 });
 
 app.get("/stock", async (req, res) => {
-  let stockName = req.query.stockName;
-  res.send(stockList[stockName]);
+  let stock = req.query.stock;
+  res.send(stockList[stock]);
+});
+
+app.get("/abnormal", async (req, res) => {
+  res.send(abnormalStocks);
 });
 
 app.listen(port, () => {
