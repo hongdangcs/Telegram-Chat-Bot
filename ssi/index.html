@@ -253,10 +253,13 @@
         const marginRight = 20;
         const marginBottom = 30;
         const marginLeft = 80;
-        const width = 1360 - margin.left - margin.right;
-        const height = 800 - margin.top - margin.bottom;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const width = viewportWidth - margin.left - margin.right;
+        const height = viewportHeight - margin.top - margin.bottom;
         const timeFormat = d3.timeFormat("%H:%M:%S");
         const circleRadius = 100;
+        console.log(screen.width, screen.height);
 
         const x = d3
           .scaleTime()
@@ -278,11 +281,15 @@
         svg
           .append("g")
           .attr("transform", `translate(${marginLeft},0)`)
-          .call(yAxis);
+          .call(yAxis)
+          .selectAll("text")
+          .style("font-size", "20px");
         svg
           .append("g")
           .attr("transform", `translate(0,${height - marginBottom})`)
-          .call(xAxis);
+          .call(xAxis)
+          .selectAll("text")
+          .style("font-size", "20px");
         document.querySelector("#chart").appendChild(svg.node());
 
         for (let key in ask) {
