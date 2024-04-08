@@ -280,11 +280,15 @@
         svg
           .append("g")
           .attr("transform", `translate(${marginLeft},0)`)
-          .call(yAxis);
+          .call(yAxis)
+          .selectAll("text")
+          .attr("font-size", "16px");
         svg
           .append("g")
           .attr("transform", `translate(0,${height - marginBottom})`)
-          .call(xAxis);
+          .call(xAxis)
+          .selectAll("text")
+          .attr("font-size", "16px");
         document.querySelector("#chart").appendChild(svg.node());
 
         for (let key in ask) {
