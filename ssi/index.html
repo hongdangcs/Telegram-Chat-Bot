@@ -240,7 +240,13 @@
         const yLower =
           Math.min(...allKeys) -
           0.12 * (Math.max(...allKeys) - Math.min(...allKeys));
-        const xLower = time[0] - 0.08 * (time[time.length - 1] - time[0]);
+        const yUpper =
+          Math.max(...allKeys) +
+          0.08 * (Math.max(...allKeys) - Math.min(...allKeys));
+        const xLower =
+          Math.min(...time) - 0.08 * (Math.max(...time) - Math.min(...time));
+        const xUpper =
+          Math.max(...time) + 0.08 * (Math.max(...time) - Math.min(...time));
 
         const margin = { top: 20, right: 20, bottom: 30, left: 80 };
         const marginTop = 20;
@@ -254,12 +260,12 @@
 
         const x = d3
           .scaleTime()
-          .domain([xLower, time[time.length - 1]])
+          .domain([xLower, xUpper])
           .range([marginLeft, width - marginRight]);
 
         const y = d3
           .scaleLinear()
-          .domain([yLower, d3.max(allKeys)])
+          .domain([yLower, yUpper])
           .range([height - marginBottom, marginTop]);
         const xAxis = d3.axisBottom(x).tickFormat(timeFormat).tickValues(time);
         const yAxis = d3.axisLeft(y).tickValues(allKeys);
