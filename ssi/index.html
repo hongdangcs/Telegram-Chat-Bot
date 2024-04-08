@@ -3,13 +3,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   </head>
   <body>
     <div class="data">
       <div id="chart"></div>
     </div>
-    <script type="module">
-      import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+    <script>
       let stock = [
         {
           TradingDate: "02/04/2024",
@@ -203,298 +203,126 @@
           BidVol10: 3000,
           TradingSession: "LO",
         },
-        {
-          TradingDate: "02/04/2024",
-          Time: "14:42:02",
-          Exchange: "UPCOM",
-          Symbol: "OIL",
-          RType: "X-QUOTE",
-          AskPrice1: 10000,
-          AskPrice2: 10100,
-          AskPrice3: 0,
-          AskPrice4: 10300,
-          AskPrice5: 10400,
-          AskPrice6: 10500,
-          AskPrice7: 10600,
-          AskPrice8: 10700,
-          AskPrice9: 10800,
-          AskPrice10: 10900,
-          AskVol1: 384700,
-          AskVol2: 348500,
-          AskVol3: 0,
-          AskVol4: 157100,
-          AskVol5: 105500,
-          AskVol6: 22000,
-          AskVol7: 8500,
-          AskVol8: 3800,
-          AskVol9: 12200,
-          AskVol10: 2700,
-          BidPrice1: 9900,
-          BidPrice2: 9800,
-          BidPrice3: 9700,
-          BidPrice4: 9600,
-          BidPrice5: 9500,
-          BidPrice6: 9400,
-          BidPrice7: 9300,
-          BidPrice8: 9200,
-          BidPrice9: 9100,
-          BidPrice10: 9000,
-          BidVol1: 376800,
-          BidVol2: 276500,
-          BidVol3: 188400,
-          BidVol4: 34900,
-          BidVol5: 6000,
-          BidVol6: 3000,
-          BidVol7: 6500,
-          BidVol8: 3500,
-          BidVol9: 3700,
-          BidVol10: 3000000,
-          TradingSession: "LO",
-        },
-        {
-          TradingDate: "02/04/2024",
-          Time: "14:42:53",
-          Exchange: "UPCOM",
-          Symbol: "OIL",
-          RType: "X-QUOTE",
-          AskPrice1: 10000,
-          AskPrice2: 10100,
-          AskPrice3: 10200,
-          AskPrice4: 10320,
-          AskPrice5: 10400,
-          AskPrice6: 10500,
-          AskPrice7: 10600,
-          AskPrice8: 10700,
-          AskPrice9: 10800,
-          AskPrice10: 10900,
-          AskVol1: 384700,
-          AskVol2: 348500,
-          AskVol3: 385100,
-          AskVol4: 157100,
-          AskVol5: 105500,
-          AskVol6: 22000,
-          AskVol7: 8500,
-          AskVol8: 3800,
-          AskVol9: 12200,
-          AskVol10: 2700,
-          BidPrice1: 9900,
-          BidPrice2: 9800,
-          BidPrice3: 9700,
-          BidPrice4: 9600,
-          BidPrice5: 9500,
-          BidPrice6: 9400,
-          BidPrice7: 9300,
-          BidPrice8: 9200,
-          BidPrice9: 9100,
-          BidPrice10: 9000,
-          BidVol1: 376800,
-          BidVol2: 276600,
-          BidVol3: 188400,
-          BidVol4: 34900,
-          BidVol5: 6000,
-          BidVol6: 3000,
-          BidVol7: 6500,
-          BidVol8: 3500,
-          BidVol9: 3700,
-          BidVol10: 3000000,
-          TradingSession: "LO",
-        },
-        {
-          TradingDate: "02/04/2024",
-          Time: "14:43:46",
-          Exchange: "UPCOM",
-          Symbol: "OIL",
-          RType: "X-QUOTE",
-          AskPrice1: 10000,
-          AskPrice2: 10100,
-          AskPrice3: 10200,
-          AskPrice4: 10300,
-          AskPrice5: 10400,
-          AskPrice6: 10500,
-          AskPrice7: 10600,
-          AskPrice8: 10700,
-          AskPrice9: 10800,
-          AskPrice10: 10900,
-          AskVol1: 384700,
-          AskVol2: 348500,
-          AskVol3: 384500,
-          AskVol4: 157100,
-          AskVol5: 105500,
-          AskVol6: 22000,
-          AskVol7: 8500,
-          AskVol8: 3800,
-          AskVol9: 12200,
-          AskVol10: 2700,
-          BidPrice1: 9900,
-          BidPrice2: 9800,
-          BidPrice3: 9700,
-          BidPrice4: 9600,
-          BidPrice5: 9500,
-          BidPrice6: 9400,
-          BidPrice7: 9300,
-          BidPrice8: 9200,
-          BidPrice9: 9100,
-          BidPrice10: 0,
-          BidVol1: 376800,
-          BidVol2: 276600,
-          BidVol3: 188400,
-          BidVol4: 34900,
-          BidVol5: 6000,
-          BidVol6: 3000,
-          BidVol7: 6500,
-          BidVol8: 3500,
-          BidVol9: 3700,
-          BidVol10: 0,
-          TradingSession: "LO",
-        },
-        {
-          TradingDate: "02/04/2024",
-          Time: "14:46:58",
-          Exchange: "UPCOM",
-          Symbol: "OIL",
-          RType: "X-QUOTE",
-          AskPrice1: 10000,
-          AskPrice2: 10100,
-          AskPrice3: 10200,
-          AskPrice4: 10300,
-          AskPrice5: 10400,
-          AskPrice6: 10500,
-          AskPrice7: 10600,
-          AskPrice8: 10700,
-          AskPrice9: 10800,
-          AskPrice10: 10900,
-          AskVol1: 384700,
-          AskVol2: 348500,
-          AskVol3: 384500,
-          AskVol4: 157100,
-          AskVol5: 105500,
-          AskVol6: 22000,
-          AskVol7: 8500,
-          AskVol8: 3800,
-          AskVol9: 12200,
-          AskVol10: 2700,
-          BidPrice1: 9980,
-          BidPrice2: 9850,
-          BidPrice3: 9700,
-          BidPrice4: 9600,
-          BidPrice5: 9500,
-          BidPrice6: 9400,
-          BidPrice7: 9300,
-          BidPrice8: 9200,
-          BidPrice9: 9100,
-          BidPrice10: 0,
-          BidVol1: 326800,
-          BidVol2: 276600,
-          BidVol3: 188400,
-          BidVol4: 34900,
-          BidVol5: 6000,
-          BidVol6: 3000,
-          BidVol7: 6500,
-          BidVol8: 3500,
-          BidVol9: 3700,
-          BidVol10: 0,
-          TradingSession: "LO",
-        },
       ];
+      function drawChart() {
+        // Clear the old chart
+        d3.select("#chart").selectAll("*").remove();
+        const time = stock.map((data) => new Date("1970-01-01T" + data.Time));
 
-      const time = stock.map((data) => new Date("1970-01-01T" + data.Time));
-      console.log(time);
+        const ask = [];
+        const bid = [];
+        for (let i = 0; i < stock.length; i++) {
+          for (let j = 1; j <= 10; j++) {
+            if (stock[i]["AskPrice" + j] && !ask[stock[i]["AskPrice" + j]]) {
+              ask[stock[i]["AskPrice" + j]] = [];
+            }
+            if (stock[i]["BidPrice" + j] && !bid[stock[i]["BidPrice" + j]]) {
+              bid[stock[i]["BidPrice" + j]] = [];
+            }
+            if (stock[i]["AskPrice" + j])
+              ask[stock[i]["AskPrice" + j]][i] = stock[i]["AskVol" + j];
+            if (stock[i]["BidPrice" + j])
+              bid[stock[i]["BidPrice" + j]][i] = stock[i]["BidVol" + j];
+          }
+        }
 
-      const ask = [];
-      const bid = [];
-      for (let i = 0; i < stock.length; i++) {
-        for (let j = 1; j <= 10; j++) {
-          if (
-            stock[i]["AskPrice" + j] &&
-            !ask["AskPrice" + stock[i]["AskPrice" + j]]
-          ) {
-            ask["AskPrice" + stock[i]["AskPrice" + j]] = [];
+        const allValues = Object.values(ask)
+          .flat()
+          .concat(Object.values(bid).flat());
+        const yMax = Math.max(...allValues);
+        const yMin = Math.min(...allValues);
+
+        const allKeys = Object.keys(ask)
+          .concat(Object.keys(bid))
+          .map(Number)
+          .sort((a, b) => a - b);
+
+        const yLower =
+          Math.min(...allKeys) -
+          0.12 * (Math.max(...allKeys) - Math.min(...allKeys));
+        const xLower = time[0] - 0.08 * (time[time.length - 1] - time[0]);
+
+        const margin = { top: 20, right: 20, bottom: 30, left: 80 };
+        const marginTop = 20;
+        const marginRight = 20;
+        const marginBottom = 30;
+        const marginLeft = 80;
+        const width = 1360 - margin.left - margin.right;
+        const height = 800 - margin.top - margin.bottom;
+        const timeFormat = d3.timeFormat("%H:%M:%S");
+        const circleRadius = 100;
+
+        const x = d3
+          .scaleTime()
+          .domain([xLower, time[time.length - 1]])
+          .range([marginLeft, width - marginRight]);
+
+        const y = d3
+          .scaleLinear()
+          .domain([yLower, d3.max(allKeys)])
+          .range([height - marginBottom, marginTop]);
+        const xAxis = d3.axisBottom(x).tickFormat(timeFormat).tickValues(time);
+        const yAxis = d3.axisLeft(y).tickValues(allKeys);
+
+        const svg = d3
+          .create("svg")
+          .attr("width", width)
+          .attr("height", height);
+
+        svg
+          .append("g")
+          .attr("transform", `translate(${marginLeft},0)`)
+          .call(yAxis);
+        svg
+          .append("g")
+          .attr("transform", `translate(0,${height - marginBottom})`)
+          .call(xAxis);
+        document.querySelector("#chart").appendChild(svg.node());
+
+        for (let key in ask) {
+          for (let i = 0; i < ask[key].length; i++) {
+            let value = ask[key][i];
+            if (value) {
+              svg
+                .append("circle")
+                .attr("cx", x(time[i]))
+                .attr("cy", y(key))
+                .attr(
+                  "r",
+                  (value / yMax) * circleRadius > 5
+                    ? (value / yMax) * circleRadius
+                    : 5
+                )
+                .attr("fill", "red")
+                .attr("stroke", "black")
+                .attr("stroke-width", 0.35);
+            }
           }
-          if (
-            stock[i]["BidPrice" + j] &&
-            !bid["BidPrice" + stock[i]["BidPrice" + j]]
-          ) {
-            bid["BidPrice" + stock[i]["BidPrice" + j]] = [];
+        }
+
+        for (let key in bid) {
+          for (let i = 0; i < bid[key].length; i++) {
+            let value = bid[key][i];
+            console.log("key: ", key, ", value: ", value);
+            if (value) {
+              svg
+                .append("circle")
+                .attr("cx", x(time[i]))
+                .attr("cy", y(key))
+                .attr(
+                  "r",
+                  (value / yMax) * circleRadius > 5
+                    ? (value / yMax) * circleRadius
+                    : 5
+                )
+                .attr("fill", "blue")
+                .attr("stroke", "black")
+                .attr("stroke-width", 0.35);
+            }
           }
-          if (stock[i]["AskPrice" + j])
-            ask["AskPrice" + stock[i]["AskPrice" + j]][i] =
-              stock[i]["AskVol" + j];
-          if (stock[i]["BidPrice" + j])
-            bid["BidPrice" + stock[i]["BidPrice" + j]][i] =
-              stock[i]["BidVol" + j];
         }
       }
-
-      const allValues = Object.values(ask)
-        .flat()
-        .concat(Object.values(bid).flat());
-      const yMax = Math.max(...allValues);
-      console.log(yMax);
-
-      const margin = { top: 20, right: 20, bottom: 30, left: 80 };
-      const marginTop = 20;
-      const marginRight = 20;
-      const marginBottom = 30;
-      const marginLeft = 80;
-      const width = 960 - margin.left - margin.right;
-      const height = 500 - margin.top - margin.bottom;
-      const timeFormat = d3.timeFormat("%H:%M:%S");
-
-      const x = d3
-        .scaleTime()
-        .domain(d3.extent(time))
-        .range([marginLeft, width - marginRight]);
-
-      const y = d3
-        .scaleLinear()
-        .domain(d3.extent(allValues))
-        .range([height - marginBottom, marginTop]);
-      const xAxis = d3.axisBottom(x).tickFormat(timeFormat).tickValues(time);
-
-      const svg = d3.create("svg").attr("width", width).attr("height", height);
-
-      svg
-        .append("g")
-        .attr("transform", `translate(${marginLeft},0)`)
-        .call(d3.axisLeft(y));
-      svg
-        .append("g")
-        .attr("transform", `translate(0,${height - marginBottom})`)
-        .call(xAxis);
-      document.querySelector("#chart").appendChild(svg.node());
-
-      for (let key in ask) {
-        const line = d3
-          .line()
-          .defined((d, i) => !isNaN(ask[key][i]))
-          .x((d, i) => x(time[i]))
-          .y((d, i) => y(ask[key][i]));
-
-        svg
-          .append("path")
-          .datum(stock)
-          .attr("fill", "none")
-          .attr("stroke", "red")
-          .attr("stroke-width", 1.5)
-          .attr("d", line);
-      }
-
-      for (let key in bid) {
-        const line = d3
-          .line()
-          .defined((d, i) => !isNaN(bid[key][i]))
-          .x((d, i) => x(time[i]))
-          .y((d, i) => y(bid[key][i]));
-
-        svg
-          .append("path")
-          .datum(stock)
-          .attr("fill", "none")
-          .attr("stroke", "green")
-          .attr("stroke-width", 1.5)
-          .attr("d", line);
-      }
-
+      drawChart();
       /*
       function reorganizeData(data) {
         const ask = [];
