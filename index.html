@@ -4,6 +4,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <style>
+      a {
+        text-decoration: none;
+        color: rgba(0, 0, 0, 0.541);
+      }
+    </style>
   </head>
   <body>
     <div class="data">
@@ -95,7 +101,7 @@
           BidPrice8: 0,
           BidPrice9: 0,
           BidPrice10: 0,
-          BidVol1: 326900,
+          BidVol1: 3269000,
           BidVol2: 276500,
           BidVol3: 153300,
           BidVol4: 34900,
@@ -143,7 +149,7 @@
           BidPrice8: 9200,
           BidPrice9: 9100,
           BidPrice10: 9000,
-          BidVol1: 326800,
+          BidVol1: 3268000,
           BidVol2: 276500,
           BidVol3: 153300,
           BidVol4: 34900,
@@ -305,8 +311,8 @@
                     ? (value / yMax) * circleRadius
                     : 5
                 )
-                .attr("fill", "red")
-                .attr("stroke", "black")
+                .attr("fill", "rgba(252, 60, 60, 0.6)")
+                .attr("stroke", "rgba(0, 0, 0, 0.5)")
                 .attr("stroke-width", 0.35);
             }
           }
@@ -326,8 +332,8 @@
                     ? (value / yMax) * circleRadius
                     : 5
                 )
-                .attr("fill", "blue")
-                .attr("stroke", "black")
+                .attr("fill", "#3c5ffcaa")
+                .attr("stroke", "rgba(0, 0, 0, 0.5)")
                 .attr("stroke-width", 0.35);
             }
           }

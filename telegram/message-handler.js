@@ -21,18 +21,6 @@ module.exports = async (bot, browser) => {
 
   const timeIntervals = tradingView.timeInterval;
 
-  // bot.onText(/\/start/, (msg) => {
-  //   const chatId = msg.chat.id;
-  //   chatStates[chatId] = {};
-  //   updateTimeout(chatStates, chatId);
-  //   bot.sendMessage(chatId, "Choose 1", {
-  //     reply_markup: {
-  //       keyboard: stockSymbols.map((symbol) => [symbol]),
-  //     },
-  //   });
-  //   return;
-  // });
-
   bot.onText(/\/help/, (msg) => {
     const chatId = msg.chat.id;
     bot.sendMessage(
