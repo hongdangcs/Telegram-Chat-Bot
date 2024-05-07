@@ -15,9 +15,9 @@ var browser;
     args: ["--no-sandbox"],
   });
 
-  tradingViewLogin(browser, sessionid_sign, sessionid).then(() => {
-    console.log("Logged in");
-  });
+  // tradingViewLogin(browser, sessionid_sign, sessionid).then(() => {
+  //   console.log("Logged in");
+  // });
 
   messageHandler(bot, browser);
 })();

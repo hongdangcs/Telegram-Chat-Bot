@@ -30,10 +30,10 @@ class StockListStreamer extends EventEmitter {
         let parsedObject = JSON.parse(message);
         let parsedContent = JSON.parse(parsedObject.Content);
         if (parsedContent.Symbol) {
-          /*if (parsedContent.TradingDate !== todayDate) {
+          if (parsedContent.TradingDate !== todayDate) {
             todayDate = getTodayDate();
             removeOldDayData(this.stockList, parsedContent, todayDate);
-          }*/
+          }
           modifyStockList(this.stockList, parsedContent, todayDate);
           this.emit("stockAdded", parsedContent.Symbol);
           detectStock(this.abnormalStocks, parsedContent);
@@ -51,7 +51,7 @@ class StockListStreamer extends EventEmitter {
   }
 }
 
-function removeOldDayData(stockList, parsedContent, todayDate) {
+async function removeOldDayData(stockList, parsedContent, todayDate) {
   if (!stockList[parsedContent.Symbol]) return;
   for (let i = 0; i < stockList[parsedContent.Symbol].length; i++) {
     let stock = stockList[parsedContent.Symbol][i];
@@ -67,6 +67,7 @@ async function detectStock(abnormalStocks, parsedContent) {
   let secondHighestBid = 0;
   let highestAsk = 0;
   let secondHighestAsk = 0;
+  const stockRaito = ssi.stockRaito;
 
   for (let i = 1; i <= 10; i++) {
     let bid = parsedContent["BidVol" + i];
@@ -85,19 +86,19 @@ async function detectStock(abnormalStocks, parsedContent) {
     }
   }
   if (secondHighestAsk !== 0 && secondHighestBid !== 0) {
-    if (highestBid / secondHighestBid > 5) {
+    if (highestBid / secondHighestBid > stockRaito) {
       abnormalStocks.push(parsedContent);
     }
-    if (highestAsk / secondHighestAsk > 5) {
+    if (highestAsk / secondHighestAsk > stockRaito) {
       abnormalStocks.push(parsedContent);
     }
   }
 }
 
 async function modifyStockList(stockList, parsedContent, todayDate) {
-  /*if (parsedContent.TradingDate !== todayDate) {
+  if (parsedContent.TradingDate !== todayDate) {
     return;
-  }*/
+  }
   if (!stockList[parsedContent.Symbol]) {
     stockList[parsedContent.Symbol] = [];
   }

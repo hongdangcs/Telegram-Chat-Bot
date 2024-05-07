@@ -6,31 +6,40 @@ const captureHandler = require("./capture-handler");
 const captureAllHandler = require("./capture-all-handler");
 const { createPage } = require("../puppeteer-page/puppeteer-page");
 const similarHandler = require("./similar-handler");
+const get_tradingview_urls = require("../tradingview/get-tradingview-urls");
+const streamer = require("../ssi/stream-data");
+const captureMarketDepth = require("../ssi/capture-market-depth");
 
-module.exports = (bot, browser) => {
+module.exports = async (bot, browser) => {
   const chatStates = {};
   const stock = tradingView.stock;
-  const stockSymbols = Object.keys(stock);
+
+  let stockSymbols = await get_tradingview_urls();
+  stockSymbols = new Map([...stockSymbols.entries()].sort());
+
+  stockListSSI = streamer.stockList;
 
   const timeIntervals = tradingView.timeInterval;
 
-  bot.onText(/\/start/, (msg) => {
-    const chatId = msg.chat.id;
-    chatStates[chatId] = {};
-    updateTimeout(chatStates, chatId);
-    bot.sendMessage(chatId, "Choose 1", {
-      reply_markup: {
-        keyboard: stockSymbols.map((symbol) => [symbol]),
-      },
-    });
-    return;
-  });
+  // bot.onText(/\/start/, (msg) => {
+  //   const chatId = msg.chat.id;
+  //   chatStates[chatId] = {};
+  //   updateTimeout(chatStates, chatId);
+  //   bot.sendMessage(chatId, "Choose 1", {
+  //     reply_markup: {
+  //       keyboard: stockSymbols.map((symbol) => [symbol]),
+  //     },
+  //   });
+  //   return;
+  // });
 
   bot.onText(/\/help/, (msg) => {
     const chatId = msg.chat.id;
     bot.sendMessage(
       chatId,
-      "/start - Start the bot\n/help - Show this message"
+      "/start - Start the bot\n/help - Show this message" +
+        "\n/s <stock name> - Search for stock" +
+        "\n/list - Show all stocks"
     );
 
     return;
@@ -69,7 +78,53 @@ module.exports = (bot, browser) => {
     }
   });
 
+  bot.onText(/\/list/, async (msg) => {
+    const chatId = msg.chat.id;
+    let message = "Stocks: \n";
+    for (let stock of stockSymbols.keys()) {
+      if (message.length > 4000) {
+        bot.sendMessage(chatId, message);
+        message = "";
+      }
+      message += stock + "\n";
+    }
+    bot.sendMessage(chatId, message);
+    return;
+  });
+
   bot.on("message", async (msg) => {
+    if (msg.text.startsWith("/s")) {
+      const chatId = msg.chat.id;
+      let stockName = msg.text.split(" ")[1];
+      if (!stockName) {
+        bot.sendMessage(chatId, "Invalid input");
+        return;
+      }
+      stockName = stockName.toUpperCase();
+
+      if (!stockSymbols.has(stockName)) {
+        bot.sendMessage(
+          chatId,
+          "No stock found for " + stockName + ". Try /list to see all stocks"
+        );
+        return;
+      }
+      if (!chatStates[chatId]) {
+        chatStates[chatId] = {};
+      }
+      chatStates[chatId].coin = stockName;
+      updateTimeout(chatStates, chatId);
+      bot.sendMessage(chatId, stockName + " selected.", {
+        reply_markup: {
+          keyboard: [
+            ...Object.keys(timeIntervals).map((time) => [time]),
+            ["ALL"],
+            ["Market Depth"],
+          ],
+        },
+      });
+      return;
+    }
     if (msg.text.startsWith("/")) {
       return;
     }
@@ -80,6 +135,48 @@ module.exports = (bot, browser) => {
       bot.sendMessage(chatId, "Try /start first");
       return;
     }
+    if (msg.text == "Market Depth") {
+      const timeNow = new Date();
+      if (chatState.time && timeNow - chatState.time < 30000) {
+        bot.sendMessage(
+          chatId,
+          "Too many requests, please wait for last request to finish"
+        );
+        return;
+      }
+      try {
+        chatState.time = timeNow;
+        stockName = chatState.coin;
+        if (!stockName) {
+          bot.sendMessage(chatId, "Choose 1 first");
+          return;
+        }
+        if (!stockListSSI[stockName]) {
+          await bot.sendMessage(chatId, "Please enter a stock name");
+          return;
+        }
+        if (!chatState.page) {
+          chatState.page = await browser.newPage();
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1800));
+        await chatState.page.goto(
+          "https://hongdangcs.github.io/Telegram-Chat-Bot/"
+        );
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await captureMarketDepth(
+          chatState.page,
+          bot,
+          chatId,
+          stockListSSI[stockName]
+        );
+      } catch (error) {
+        console.log(error);
+        bot.sendMessage(chatId, "Something went wrong");
+        return;
+      }
+      return;
+    }
+    /*
     if (stock.hasOwnProperty(msg.text)) {
       chatState.coin = msg.text;
       bot.sendMessage(chatId, "Choose 2", {
@@ -91,7 +188,9 @@ module.exports = (bot, browser) => {
         },
       });
       return;
-    } else if (timeIntervals.hasOwnProperty(msg.text)) {
+    } else
+    */
+    if (timeIntervals.hasOwnProperty(msg.text)) {
       chatState.timeInterval = msg.text;
       const timeNow = new Date();
       if (chatState.time && timeNow - chatState.time < 30000) {
@@ -111,7 +210,7 @@ module.exports = (bot, browser) => {
           chatState.page = await browser.newPage();
         }
         await new Promise((resolve) => setTimeout(resolve, 1800));
-        await chatState.page.goto(stock[chatState.coin]);
+        await chatState.page.goto(stockSymbols.get(chatState.coin));
         await captureHandler(
           msg,
           chatState,
