@@ -103,22 +103,20 @@ async function modifyStockList(stockList, parsedContent, todayDate) {
     stockList[parsedContent.Symbol] = [];
   }
 
-  stockList[parsedContent.Symbol].push(parsedContent);
+  let currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
 
-  if (stockList[parsedContent.Symbol].length > 5) {
-    let currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
-
-    for (let i = 0; i < stockList[parsedContent.Symbol].length; i++) {
-      if (
-        minutesCalculator(currentTime) -
-          minutesCalculator(stockList[parsedContent.Symbol][i].Time) >
-        5
-      ) {
-        stockList[parsedContent.Symbol].splice(i, 1);
-        i--;
-      }
+  for (let i = 0; i < stockList[parsedContent.Symbol].length; i++) {
+    if (
+      minutesCalculator(currentTime) -
+        minutesCalculator(stockList[parsedContent.Symbol][i].Time) >
+      5
+    ) {
+      stockList[parsedContent.Symbol].splice(i, 1);
+      i--;
     }
   }
+
+  stockList[parsedContent.Symbol].push(parsedContent);
 }
 
 function minutesCalculator(time) {
