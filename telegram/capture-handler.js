@@ -30,7 +30,6 @@ async function captureHandler(msg, chatState, chatId, bot, page) {
   );
   bot.sendPhoto(chatId, `./screenshots/${imgName}.png`);
   await new Promise((resolve) => setTimeout(resolve, 3000));
-  bot.sendMessage(chatId, "/similar for similar interval");
   setTimeout(() => {
     fs.unlinkSync(`./screenshots/${imgName}.png`);
   }, 1000);

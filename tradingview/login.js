@@ -6,27 +6,22 @@ const saveSettings = require("./savesettings");
 const timeIntervalSetting = require("./time-interval");
 
 async function tradingViewLogin(browser, sessionid_sign, sessionid) {
+  // open new browser page
   const page = await browser.newPage();
-  await page.goto("https://www.tradingview.com/");
+  await page.goto("https://tradingview.com/");
   await new Promise((resolve) => setTimeout(resolve, 5000));
+
+  // login by session id
   cookies = [
     { name: "sessionid_sign", value: sessionid_sign },
     { name: "sessionid", value: sessionid },
   ];
   await page.setCookie(...cookies);
   await new Promise((resolve) => setTimeout(resolve, 3000));
+
+  // reload chart page
   await saveSettings(page);
-  // modify(page).then((data) => {
-  //   console.log(data);
-  // });
   await page.close();
-  // captureAll(
-  //   browser,
-  //   "https://www.tradingview.com/chart/Z2D2ibVU/",
-  //   "SPX"
-  // ).then(() => {
-  //   console.log("data captured");
-  // });
 }
 
 module.exports = tradingViewLogin;

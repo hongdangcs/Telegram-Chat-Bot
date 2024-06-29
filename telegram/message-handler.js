@@ -85,7 +85,7 @@ module.exports = async (bot, browser) => {
       const chatId = msg.chat.id;
       let stockName = msg.text.split(" ")[1];
       if (!stockName) {
-        bot.sendMessage(chatId, "Invalid input");
+        bot.sendMessage(chatId, "Invalid input, \n/help for help");
         return;
       }
       stockName = stockName.toUpperCase();
@@ -120,7 +120,7 @@ module.exports = async (bot, browser) => {
     const chatState = chatStates[chatId];
     updateTimeout(chatStates, chatId);
     if (!chatState) {
-      bot.sendMessage(chatId, "Try /start first");
+      bot.sendMessage(chatId, "Choose stock first!");
       return;
     }
     if (msg.text == "Market Depth") {
@@ -133,14 +133,19 @@ module.exports = async (bot, browser) => {
         return;
       }
       try {
+        // update time
         chatState.time = timeNow;
+        // execute request
         stockName = chatState.coin;
         if (!stockName) {
-          bot.sendMessage(chatId, "Choose 1 first");
+          bot.sendMessage(chatId, "Choose stock first, \n/help for help");
           return;
         }
         if (!stockListSSI[stockName]) {
-          await bot.sendMessage(chatId, "Please enter a stock name");
+          await bot.sendMessage(
+            chatId,
+            "There is no data for requested stock!"
+          );
           return;
         }
         if (!chatState.page) {
@@ -164,20 +169,7 @@ module.exports = async (bot, browser) => {
       }
       return;
     }
-    /*
-    if (stock.hasOwnProperty(msg.text)) {
-      chatState.coin = msg.text;
-      bot.sendMessage(chatId, "Choose 2", {
-        reply_markup: {
-          keyboard: [
-            ...Object.keys(timeIntervals).map((time) => [time]),
-            ["ALL"],
-          ],
-        },
-      });
-      return;
-    } else
-    */
+
     if (timeIntervals.hasOwnProperty(msg.text)) {
       chatState.timeInterval = msg.text;
       const timeNow = new Date();
@@ -191,7 +183,7 @@ module.exports = async (bot, browser) => {
       chatState.time = timeNow;
       try {
         if (!chatState.coin) {
-          bot.sendMessage(chatId, "Choose 1 first");
+          bot.sendMessage(chatId, "Choose stock first");
           return;
         }
         if (!chatState.page) {
@@ -218,7 +210,7 @@ module.exports = async (bot, browser) => {
       await captureAllHandler(msg, chatState, chatId, bot, browser);
       return;
     }
-    bot.sendMessage(chatId, "Invalid input");
+    bot.sendMessage(chatId, "Invalid input,\n/help for help");
   });
 };
 

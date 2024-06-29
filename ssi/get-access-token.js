@@ -21,6 +21,7 @@ async function getAccessToken() {
     .request(config)
     .then((response) => {
       accessToken = response.data.data.accessToken;
+      console.log("get access token successful");
     })
     .catch((error) => {
       console.log(error);

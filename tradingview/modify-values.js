@@ -16,7 +16,7 @@ async function modify(page) {
     await new Promise((r) => setTimeout(r, 300));
     let settingButtonCoordinates = await getCoordinates(
       page,
-      'div[data-name="legend-source-item"] div[data-name="legend-settings-action"]'
+      'div[data-name="legend-source-item"] button[data-name="legend-settings-action"]'
     );
     await new Promise((r) => setTimeout(r, 300));
     await page.mouse.click(
@@ -41,6 +41,8 @@ async function modify(page) {
     await page.click('button[data-name="submit-button"]');
     await new Promise((r) => setTimeout(r, 5000));
     let priceChange = await priceDataChange(page);
+    console.log("price change:");
+    console.log(priceChange);
     return priceChange;
   } catch (e) {
     console.log(e);

@@ -30,10 +30,10 @@ class StockListStreamer extends EventEmitter {
         let parsedObject = JSON.parse(message);
         let parsedContent = JSON.parse(parsedObject.Content);
         if (parsedContent.Symbol) {
-          if (parsedContent.TradingDate !== todayDate) {
-            todayDate = getTodayDate();
-            removeOldDayData(this.stockList, parsedContent, todayDate);
-          }
+          // if (parsedContent.TradingDate !== todayDate) {
+          //   todayDate = getTodayDate();
+          //   removeOldDayData(this.stockList, parsedContent, todayDate);
+          // }
           modifyStockList(this.stockList, parsedContent, todayDate);
           this.emit("stockAdded", parsedContent.Symbol);
           detectStock(this.abnormalStocks, parsedContent);
@@ -96,9 +96,9 @@ async function detectStock(abnormalStocks, parsedContent) {
 }
 
 async function modifyStockList(stockList, parsedContent, todayDate) {
-  if (parsedContent.TradingDate !== todayDate) {
-    return;
-  }
+  // if (parsedContent.TradingDate !== todayDate) {
+  //   return;
+  // }
   if (!stockList[parsedContent.Symbol]) {
     stockList[parsedContent.Symbol] = [];
   }
