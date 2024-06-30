@@ -25,5 +25,6 @@ module.exports = {
     ApiUrl: "https://fc-data.ssi.com.vn/",
     consumerID: "",
     consumerSecret: "",
+    stockRaito: 5,
   },
 };

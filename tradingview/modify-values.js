@@ -41,8 +41,6 @@ async function modify(page) {
     await page.click('button[data-name="submit-button"]');
     await new Promise((r) => setTimeout(r, 5000));
     let priceChange = await priceDataChange(page);
-    console.log("price change:");
-    console.log(priceChange);
     return priceChange;
   } catch (e) {
     console.log(e);

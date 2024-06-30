@@ -12,7 +12,6 @@ async function chartData(page, url, timeInterval, imgName) {
     // extract price and indicator value
     const priceChange = await modify(page);
     await new Promise((resolve) => setTimeout(resolve, 600));
-    console.log(priceChange);
     return priceChange;
   } catch (e) {
     console.log(e);

@@ -25,7 +25,7 @@ module.exports = async (bot, browser) => {
     const chatId = msg.chat.id;
     bot.sendMessage(
       chatId,
-      "/start - Start the bot\n/help - Show this message" +
+      "/help - Show this message" +
         "\n/s <stock name> - Search for stock" +
         "\n/list - Show all stocks"
     );
@@ -70,11 +70,11 @@ module.exports = async (bot, browser) => {
     const chatId = msg.chat.id;
     let message = "Stocks: \n";
     for (let stock of stockSymbols.keys()) {
-      if (message.length > 4000) {
+      if (message.length > 3000) {
         bot.sendMessage(chatId, message);
         message = "";
       }
-      message += stock + "\n";
+      message += stock + ", ";
     }
     bot.sendMessage(chatId, message);
     return;
@@ -102,11 +102,11 @@ module.exports = async (bot, browser) => {
       }
       chatStates[chatId].coin = stockName;
       updateTimeout(chatStates, chatId);
-      bot.sendMessage(chatId, stockName + " selected.", {
+      bot.sendMessage(chatId, stockName + " was chosen.", {
         reply_markup: {
           keyboard: [
             ...Object.keys(timeIntervals).map((time) => [time]),
-            ["ALL"],
+            //["ALL"],
             ["Market Depth"],
           ],
         },
@@ -116,14 +116,15 @@ module.exports = async (bot, browser) => {
     if (msg.text.startsWith("/")) {
       return;
     }
-    const chatId = msg.chat.id;
-    const chatState = chatStates[chatId];
-    updateTimeout(chatStates, chatId);
-    if (!chatState) {
-      bot.sendMessage(chatId, "Choose stock first!");
-      return;
-    }
+
     if (msg.text == "Market Depth") {
+      const chatId = msg.chat.id;
+      const chatState = chatStates[chatId];
+      updateTimeout(chatStates, chatId);
+      if (!chatState) {
+        bot.sendMessage(chatId, "Choose stock first!");
+        return;
+      }
       const timeNow = new Date();
       if (chatState.time && timeNow - chatState.time < 30000) {
         bot.sendMessage(
@@ -171,6 +172,13 @@ module.exports = async (bot, browser) => {
     }
 
     if (timeIntervals.hasOwnProperty(msg.text)) {
+      const chatId = msg.chat.id;
+      const chatState = chatStates[chatId];
+      updateTimeout(chatStates, chatId);
+      if (!chatState) {
+        bot.sendMessage(chatId, "Choose stock first!");
+        return;
+      }
       chatState.timeInterval = msg.text;
       const timeNow = new Date();
       if (chatState.time && timeNow - chatState.time < 30000) {
@@ -207,9 +215,17 @@ module.exports = async (bot, browser) => {
 
       return;
     } else if (msg.text == "ALL") {
+      const chatId = msg.chat.id;
+      const chatState = chatStates[chatId];
+      updateTimeout(chatStates, chatId);
+      if (!chatState) {
+        bot.sendMessage(chatId, "Choose stock first!");
+        return;
+      }
       await captureAllHandler(msg, chatState, chatId, bot, browser);
       return;
     }
+    const chatId = msg.chat.id;
     bot.sendMessage(chatId, "Invalid input,\n/help for help");
   });
 };
