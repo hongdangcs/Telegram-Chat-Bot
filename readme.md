@@ -1,4 +1,4 @@
-````markdown
+
 ## Setup and Installation
 
 ### Prerequisites
