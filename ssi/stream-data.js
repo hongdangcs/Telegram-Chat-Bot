@@ -103,13 +103,15 @@ async function modifyStockList(stockList, parsedContent, todayDate) {
     stockList[parsedContent.Symbol] = [];
   }
 
-  let currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
-
   for (let i = 0; i < stockList[parsedContent.Symbol].length; i++) {
+    console.log(parsedContent.Time);
+    console.log(stockList[parsedContent.Symbol][i].Time);
     if (
-      minutesCalculator(currentTime) -
+      minutesCalculator(parsedContent.Time) -
         minutesCalculator(stockList[parsedContent.Symbol][i].Time) >
-      5
+        5 ||
+      parsedContent.TradingDate !=
+        stockList[parsedContent.Symbol][i].TradingDate
     ) {
       stockList[parsedContent.Symbol].splice(i, 1);
       i--;

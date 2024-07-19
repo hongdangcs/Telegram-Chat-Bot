@@ -32,6 +32,17 @@ module.exports = async (bot, browser) => {
 
     return;
   });
+  bot.onText(/\/start/, (msg) => {
+    const chatId = msg.chat.id;
+    bot.sendMessage(
+      chatId,
+      "/help - Show this message" +
+        "\n/s <stock name> - Select a stock" +
+        "\n/list - Show all stocks"
+    );
+
+    return;
+  });
 
   bot.onText(/\/similar/, async (msg) => {
     const chatId = msg.chat.id;
@@ -151,6 +162,9 @@ module.exports = async (bot, browser) => {
         }
         if (!chatState.page) {
           chatState.page = await browser.newPage();
+          chatState.page.on("dialog", async (dialog) => {
+            await dialog.accept();
+          });
         }
         await new Promise((resolve) => setTimeout(resolve, 1800));
         await chatState.page.goto(
@@ -196,6 +210,9 @@ module.exports = async (bot, browser) => {
         }
         if (!chatState.page) {
           chatState.page = await browser.newPage();
+          chatState.page.on("dialog", async (dialog) => {
+            await dialog.accept();
+          });
         }
         await new Promise((resolve) => setTimeout(resolve, 1800));
         await chatState.page.goto(stockSymbols.get(chatState.coin));
