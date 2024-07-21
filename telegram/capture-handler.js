@@ -24,7 +24,6 @@ async function captureHandler(msg, chatState, chatId, bot, page) {
     100 *
     (+responData.increase3 / (+responData.decrease3 + +responData.increase3));
   priceIncrease3 = priceIncrease3.toFixed(2);
-  console.log(responData);
   /*
   bot.sendMessage(
     chatId,

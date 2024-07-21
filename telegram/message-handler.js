@@ -92,11 +92,14 @@ module.exports = async (bot, browser) => {
   });
 
   bot.on("message", async (msg) => {
+    if (msg.text == "/start") {
+      return;
+    }
     if (msg.text.startsWith("/s")) {
       const chatId = msg.chat.id;
       let stockName = msg.text.split(" ")[1];
       if (!stockName) {
-        bot.sendMessage(chatId, "Invalid input, \n/help for help");
+        bot.sendMessage(chatId, "Invalid stock name, \n/help for help");
         return;
       }
       stockName = stockName.toUpperCase();
