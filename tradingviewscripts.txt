@@ -1,14 +1,17 @@
 //@version=5
 
-nowK = 90
-nowD = 87
-nowConversion = 30761
-nowBase = 30697
-nowLeadA = 30729
-nowLeadB = 30697
-nowClose = 30992
 
-indicator(title="My Scripts", shorttitle="SCRIPTS")
+currentK = input.float(0, title = "Current K")
+currentD = input.float(0, title = "Current D")
+currentConversion = input.float(0, title = "Current Conversion")
+currentBase = input.float(0, title = "Current Base")
+currentLeadA = input.float(0, title = "Current LeadA")
+currentLeadB = input.float(0, title = "Current LeadB")
+currentClose = input.float(0, title = "Current Close")
+
+// Ichimoku
+
+indicator(title="Ichimoku Cloud", shorttitle="Ichimoku", overlay=true)
 conversionPeriods = input.int(9, minval=1, title="Conversion Line Length")
 basePeriods = input.int(26, minval=1, title="Base Line Length")
 laggingSpan2Periods = input.int(52, minval=1, title="Leading Span B Length")
@@ -18,27 +21,36 @@ conversionLine = donchian(conversionPeriods)
 baseLine = donchian(basePeriods)
 leadLine1 = math.avg(conversionLine, baseLine)
 leadLine2 = donchian(laggingSpan2Periods)
-// plot(conversionLine, color=#2962FF, display = display.none, title="Conversion Line")
-// plot(baseLine, color=#B71C1C, display = display.none, title="Base Line")
-//plot(close, offset = -displacement + 1, color=#43A047, title="Lagging Span", display = display.none)
-// p1 = plot(leadLine1, offset = displacement - 1, color=#A5D6A7,
-// 	 title="Leading Span A")
-// p2 = plot(leadLine2, offset = displacement - 1, color=#EF9A9A,
-// 	 title="Leading Span B")
-// plot(leadLine1 > leadLine2 ? leadLine1 : leadLine2, offset = displacement - 1, title = "Kumo Cloud Upper Line", display = display.none)
-// plot(leadLine1 < leadLine2 ? leadLine1 : leadLine2, offset = displacement - 1, title = "Kumo Cloud Lower Line", display = display.none)
-// fill(p1, p2, color = leadLine1 > leadLine2 ? color.rgb(67, 160, 71, 90) : color.rgb(244, 67, 54, 90))
+plot(conversionLine, color=#2962FF, title="Conversion Line")
+plot(baseLine, color=#B71C1C, title="Base Line")
+plot(close, offset = -displacement + 1, color=#43A047, title="Lagging Span")
+p1 = plot(leadLine1, offset = displacement - 1, color=#A5D6A7,
+	 title="Leading Span A")
+p2 = plot(leadLine2, offset = displacement - 1, color=#EF9A9A,
+	 title="Leading Span B")
+plot(leadLine1 > leadLine2 ? leadLine1 : leadLine2, offset = displacement - 1, title = "Kumo Cloud Upper Line", display = display.none)
+plot(leadLine1 < leadLine2 ? leadLine1 : leadLine2, offset = displacement - 1, title = "Kumo Cloud Lower Line", display = display.none)
+fill(p1, p2, color = leadLine1 > leadLine2 ? color.rgb(67, 160, 71, 90) : color.rgb(244, 67, 54, 90))
 
-//print table
+// leadA and leadB
+var leadA = array.new_float()
+var leadB = array.new_float()
 
-// printTable(txt) =>
-//     var table t = table.new(position.middle_right, 1, 1)
-//     table.cell(t, 0, 0, txt, text_halign = text.align_right, bgcolor = color.yellow)
-// printTable(
-//   str.format("{0,date,HH:mm:ss yyyy.MM.dd}", time))
+array.push(leadA, leadLine1)
+array.push(leadB, leadLine2)
 
-//Stock RSI full at v.28
+outLeadA = close
+outLeadB = close
 
+if barstate.islast
+	outLeadA := array.get(leadA, array.size(leadA) - displacement)
+	outLeadB := array.get(leadB, array.size(leadB) - displacement)
+plot(outLeadA, color =  color.rgb(255, 255, 255, 100), title = 'Lead A')
+plot(outLeadB, color =  color.rgb(255, 255, 255, 100), title = 'Lead B')
+
+// Stoch RSI
+//@version=5
+// indicator(title="Stochastic RSI", shorttitle="Stoch RSI", format=format.price, precision=2, timeframe="", timeframe_gaps=true)
 smoothK = input.int(3, "K", minval=1)
 smoothD = input.int(3, "D", minval=1)
 lengthRSI = input.int(14, "RSI Length", minval=1)
@@ -48,99 +60,89 @@ rsi1 = ta.rsi(src, lengthRSI)
 k = ta.sma(ta.stoch(rsi1, rsi1, rsi1, lengthStoch), smoothK)
 d = ta.sma(k, smoothD)
 
+// plot(k, "K", color=#2962FF)
+// plot(d, "D", color=#FF6D00)
+// h0 = hline(80, "Upper Band", color=#787B86)
+// hline(50, "Middle Band", color=color.new(#787B86, 50))
+// h1 = hline(20, "Lower Band", color=#787B86)
+// fill(h0, h1, color=color.rgb(33, 150, 243, 90), title="Background")
 
-// ma_fast = ta.sma(close, 50)
-// ma_slow = ta.sma(close, 200)
+// Similar
 
-var dates = array.new_string()
-var leadA = array.new_float()
-var leadB = array.new_float()
-
-array.push(leadA, leadLine1)
-array.push(leadB, leadLine2)
-
-// var type  = array.new_string()
-// var fast  = array.new_float()
-// var slow  = array.new_float()
-
-// var logMessage = ""
-
-
-var sameDay = 0
-var float closeToCompare = 0
+var dateString = array.new_string()
+var leadAArray = array.new_float()
+var leadBArray = array.new_float()
+var similarDayCount = 0
 var closeArray  = array.new_float()
-var int increaseAfterOne = 0
-var int increaseAfterTwo = 0
-var int increaseAfterThree = 0
-var int decreaseAfterOne = 0
-var int decreaseAfterTwo = 0
-var int decreaseAfterThree = 0
+var increase1 = 0
+var increase2 = 0
+var increase3 = 0
+var decrease1 = 0
+var decrease2 = 0
+var decrease3 = 0
+var float closeToCompare = 0
+
+similarLine = low
 
 array.push(closeArray, close)
-
-similarKD = nowK < nowD ? k<d:k>d
-similarKRange = nowK<20 ? k<20 : nowK > 80 ? k>80 : k>= 20 and k<= 80
-similarCB = nowConversion > nowBase ? conversionLine > baseLine : conversionLine < baseLine
-availableCloud = array.size(leadA) > 26 ? true : false
-
-similarCloud = not availableCloud ? false : (nowClose > nowLeadA and nowClose > nowLeadB) ? (close > array.get(leadA, array.size(leadA) - 26) and close > array.get(leadB, array.size(leadB) - 26)) : (nowClose < nowLeadA and nowClose < nowLeadB) ? (close < array.get(leadA, array.size(leadA) - 26) and close < array.get(leadB, array.size(leadB) - 26)) : ((close < array.get(leadA, array.size(leadA) - 26) and close > array.get(leadB, array.size(leadB) - 26)) or (close > array.get(leadA, array.size(leadA) - 26) and close < array.get(leadB, array.size(leadB) - 26)))
+array.push(leadAArray, leadLine1)
+array.push(leadBArray, leadLine2)
 
 
-similar = math.abs(nowK-k)<5 and k<d and math.abs(nowD - d)<5
-bgcolor(similarCloud and similarCB and similarKD and similarKRange ? color.rgb(67, 160, 71, 90) : color.rgb(244, 67, 54, 100))
+similarKD = currentK > currentD ? k > d : k < d
+similarKRange = currentK < 20 ? k < 20 : currentK > 80 ? k > 80 : k >= 20 and k <= 80
+similarCB = currentConversion > currentBase ? conversionLine > baseLine : conversionLine < baseLine
+availableCloud = array.size(leadAArray) > displacement ? true : false
 
-if(similarCloud and similarCB and similarKD and similarKRange)
-    array.push(dates, str.format("{0,date,HH:mm:ss yyyy.MM.dd}", time))
-    sameDay:=sameDay+1
+similarCloud = not availableCloud ? false : (currentClose > currentLeadA and currentClose > currentLeadB) ? (close > array.get(leadAArray, array.size(leadAArray) - displacement) and close > array.get(leadBArray, array.size(leadBArray) - displacement)) : (currentClose < currentLeadA and currentClose < currentLeadB) ? (close < array.get(leadAArray, array.size(leadAArray) - displacement) and close < array.get(leadBArray, array.size(leadBArray) - displacement)) : ((close < array.get(leadAArray, array.size(leadAArray) - displacement) and close > array.get(leadBArray, array.size(leadBArray) - displacement)) or (close > array.get(leadAArray, array.size(leadAArray) - displacement) and close < array.get(leadBArray, array.size(leadBArray) - displacement)))
+
+if(similarCloud and similarCB and similarKD and similarKRange and currentClose != 0)
+    //array.push(dates, str.format("{0,date,HH:mm:ss yyyy.MM.dd}", time))
+    similarDayCount := similarDayCount + 1
 
     if(closeToCompare != 0 and array.size(closeArray) >=3)
+        similarLine := high
         if closeToCompare > array.get(closeArray, 0)
-            decreaseAfterOne := decreaseAfterOne+1
+            decrease1 := decrease1+1
         else
-            increaseAfterOne := increaseAfterOne +1
+            increase1 := increase1 +1
         if closeToCompare > array.get(closeArray, 1)
-            decreaseAfterTwo := decreaseAfterTwo+1
+            decrease2 := decrease2+1
         else
-            increaseAfterTwo := increaseAfterTwo +1
+            increase2 := increase2 +1
         if closeToCompare > array.get(closeArray, 2)
-            decreaseAfterThree := decreaseAfterThree+1
+            decrease3 := decrease3+1
         else
-            increaseAfterThree := increaseAfterThree +1
+            increase3 := increase3 +1
 
 
     closeToCompare:= close
     closeArray.clear()
 
-plot(sameDay)
-plot(increaseAfterOne, color=#9aff8cbb, title="Increase after one")
-plot(increaseAfterTwo, color=#44ce44ee, title="Increase after two")
-plot(increaseAfterThree, color=#00b100, title="Increase after three")
-plot(decreaseAfterOne, color=#ffc3c3, title="Decrease after 1")
-plot(decreaseAfterTwo, color=#eb3737de, title="Decrease after 2")
-plot(decreaseAfterThree, color=#bb0000, title="Decrease after 3")
+bgcolor(similarLine == high ? color.orange: na)
 
-
-// var float tkr = 0
+increase1plot = high
+increase2plot = high
+increase3plot = high
+decrease1plot = high
+decrease2plot = high
+decrease3plot = high
 
 if barstate.islast
+	increase1plot := high - increase1
+	increase2plot := high - increase2
+	increase3plot := high - increase3
+	decrease1plot := high - decrease1
+	decrease2plot := high - decrease2
+	decrease3plot := high - decrease3
 
-//     alert_text = "compare\n"
-//     // for i = 0 to array.size(closeArray) - 1
-//     //     if str.length(alert_text) <4000
-//     //         alert_text += str.tostring(array.get(closeArray, i)) + "\n"
 
-//     alert_text+= "increase aft one: " + str.tostring(increaseAfterOne) + "\n"
-//     alert_text+= "increase aft two: " + str.tostring(increaseAfterTwo) + "\n"
-//     alert_text+= "increase aft three: " + str.tostring(increaseAfterThree) + "\n"
-//     alert_text+= "Decrease aftr one: " + str.tostring(decreaseAfterOne) + "\n"
-//     alert_text+= "decrease aft two: " + str.tostring(decreaseAfterTwo) + "\n"
-//     alert_text+= "decrease aft three: " + str.tostring(decreaseAfterThree) + "\n"
+plot(increase1plot, title = "increase1plot", color =  color.rgb(255, 255, 255, 100))
+plot(increase2plot, title = "increase2plot", color =  color.rgb(255, 255, 255, 100))
+plot(increase3plot, title = "increase3plot", color =  color.rgb(255, 255, 255, 100))
+plot(decrease1plot, title = "decrease1plot", color =  color.rgb(255, 255, 255, 100))
+plot(decrease2plot, title = "decrease2plot", color =  color.rgb(255, 255, 255, 100))
+plot(decrease3plot, title = "decrease3plot", color =  color.rgb(255, 255, 255, 100))
+plot(similarLine, title = "similarLine", color =  color.rgb(255, 255, 255, 100))
 
-    var alert_text = "alert !!!"
 
-    alert(alert_text, freq = alert.freq_once_per_bar)
-
-//     // karray = str.tostring(k)
-//     // pos = str.pos(karray, ".")
-//     // tkr := str.substring(karray, 0, pos+3)
-//     // printTable(tkr)
