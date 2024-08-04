@@ -14,7 +14,7 @@
 - **Add custom Pine Script**
    - Open *Pine Editor* tab by clicking on ***Pine Editor*** in the bottom bar.
    - Delete all the default script in the *Pine Editor*.
-   - Copy all the content from the tradingviewscript.txt file in the project source and paste it into the Pine Editor.
+   - Copy all the content from the tradingviewscripts.txt file in the project source and paste it into the Pine Editor.
    - Add script to chart by click on ***Add to chart*** place on the top right of script editor.
    - Close *Pine Editor* tab by clicking on ***Pine Editor*** again.
 - **Add Stochastic RSI Script**
