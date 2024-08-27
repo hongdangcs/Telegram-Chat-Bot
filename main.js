@@ -10,7 +10,7 @@ const bot = new TelegramBot(token, { polling: true });
 var browser;
 (async () => {
   browser = await puppeteer.launch({
-    headless: false,
+    headless: "new",
     defaultViewport: { width: 1920, height: 1080 },
     args: ["--no-sandbox"],
   });
