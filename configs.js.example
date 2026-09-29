@@ -1,20 +1,24 @@
 module.exports = {
   tradingView: {
+    // Optional: TradingView "sessionid" / "sessionid_sign" cookies. Charts work
+    // without them; with them, data follows your account's subscription.
     login: {
       sessionid_sign: "",
       sessionid: "",
     },
+    // Extra symbols on top of the Vietnamese stocks listed automatically.
     stock: {
-      SSI: "https://www.tradingview.com/chart/?symbol=HOSE%3ASSI",
-      FPT: "https://www.tradingview.com/chart/?symbol=HOSE%3AFPT",
-      LTC: "https://www.tradingview.com/chart/?symbol=BYBIT%3ALTCUSDT",
-      VNINDEX: "https://www.tradingview.com/chart/?symbol=HOSE%3AVNINDEX",
+      SSI: "HOSE:SSI",
+      FPT: "HOSE:FPT",
+      LTC: "BYBIT:LTCUSDT",
+      VNINDEX: "HOSE:VNINDEX",
     },
+    // Keyboard button -> TradingView timeframe code.
     timeInterval: {
-      "1h": "1 hour",
-      "4h": "4 hours",
-      "1D": "1 day",
-      "1W": "1 week",
+      "1h": "60",
+      "4h": "240",
+      "1D": "1D",
+      "1W": "1W",
     },
   },
   telegram: {

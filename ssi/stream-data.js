@@ -18,6 +18,7 @@ const STOPPED_STATES = [
   "retryingFailed",
 ];
 const SNAPSHOT_WINDOW_MINUTES = 5;
+const SNAPSHOT_BUCKET_SECONDS = 5;
 const MAX_ABNORMAL_STOCKS = 500;
 
 class StockListStreamer extends EventEmitter {
@@ -125,7 +126,8 @@ function detectStock(abnormalStocks, parsedContent) {
 }
 
 // Keeps only the snapshots from the same trading day and the last
-// SNAPSHOT_WINDOW_MINUTES before the newest one.
+// SNAPSHOT_WINDOW_MINUTES before the newest one, at most one (the latest)
+// per SNAPSHOT_BUCKET_SECONDS, since quotes can arrive several times a second.
 function modifyStockList(stockList, parsedContent) {
   const newestMinute = minutesCalculator(parsedContent.Time);
   const snapshots = (stockList[parsedContent.Symbol] || []).filter(
@@ -133,8 +135,19 @@ function modifyStockList(stockList, parsedContent) {
       snapshot.TradingDate === parsedContent.TradingDate &&
       newestMinute - minutesCalculator(snapshot.Time) <= SNAPSHOT_WINDOW_MINUTES
   );
-  snapshots.push(parsedContent);
+  const bucket = (snapshot) => Math.floor(secondsOfDay(snapshot.Time) / SNAPSHOT_BUCKET_SECONDS);
+  const previous = snapshots[snapshots.length - 1];
+  if (previous && bucket(previous) === bucket(parsedContent)) {
+    snapshots[snapshots.length - 1] = parsedContent;
+  } else {
+    snapshots.push(parsedContent);
+  }
   stockList[parsedContent.Symbol] = snapshots;
+}
+
+function secondsOfDay(time) {
+  const [hours, minutes, seconds] = time.split(":").map(Number);
+  return hours * 3600 + minutes * 60 + seconds;
 }
 
 function minutesCalculator(time) {

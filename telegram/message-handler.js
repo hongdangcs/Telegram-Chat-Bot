@@ -1,40 +1,27 @@
-const path = require("path");
-const { pathToFileURL } = require("url");
 const { tradingView } = require("../configs");
 const captureHandler = require("./capture-handler");
 const captureAllHandler = require("./capture-all-handler");
 const similarHandler = require("./similar-handler");
-const get_tradingview_urls = require("../tradingview/get-tradingview-urls");
+const sendPhoto = require("./send-photo");
+const { loadSymbols } = require("../tradingview/symbols");
 const streamer = require("../ssi/stream-data");
-const captureMarketDepth = require("../ssi/capture-market-depth");
+const { renderMarketDepth } = require("../render/market-depth");
 
 const SESSION_IDLE_MS = 300000;
-// Rendered from the local file so the chart code always matches this
-// checkout, without depending on a GitHub Pages deployment.
-const MARKET_DEPTH_URL = pathToFileURL(
-  path.join(__dirname, "..", "index.html")
-).href;
 const HELP_TEXT =
   "/help - Show this message" +
   "\n/s <stock name> - Select a stock" +
   "\n/list - Show all stocks";
 
-module.exports = async (bot, browser) => {
+module.exports = async (bot) => {
   const chatStates = {};
   const stockListSSI = streamer.stockList;
   const timeIntervals = tradingView.timeInterval;
+  // Ticker -> TradingView symbol, e.g. "FPT" -> "HOSE:FPT".
+  const stockSymbols = await loadSymbols();
 
-  // Stocks from configs.js stay available even if the scanner request fails.
-  const symbolUrls = new Map([
-    ...Object.entries(tradingView.stock || {}),
-    ...(await get_tradingview_urls()),
-  ]);
-  const stockSymbols = new Map(
-    [...symbolUrls].sort(([a], [b]) => a.localeCompare(b))
-  );
-
-  // Drops the session (and closes its browser page) after SESSION_IDLE_MS
-  // without activity; every interaction restarts the countdown.
+  // Drops the session after SESSION_IDLE_MS without activity; every
+  // interaction restarts the countdown.
   function touchSession(chatId, chatState) {
     clearTimeout(chatState.idleTimer);
     chatState.idleTimer = setTimeout(() => {
@@ -45,24 +32,10 @@ module.exports = async (bot, browser) => {
       if (chatStates[chatId] === chatState) {
         delete chatStates[chatId];
       }
-      if (chatState.page) {
-        chatState.page.close().catch(() => {});
-      }
     }, SESSION_IDLE_MS);
   }
 
-  async function getPage(chatState) {
-    if (!chatState.page || chatState.page.isClosed()) {
-      chatState.page = await browser.newPage();
-      chatState.page.on("dialog", async (dialog) => {
-        await dialog.accept();
-      });
-    }
-    return chatState.page;
-  }
-
-  // Each chat shares one browser page, so only one request may drive it at
-  // a time; overlapping requests would corrupt each other's screenshots.
+  // One request per chat at a time, so a burst of taps cannot pile up work.
   async function runExclusive(chatId, chatState, task) {
     if (chatState.busy) {
       await bot.sendMessage(
@@ -95,12 +68,12 @@ module.exports = async (bot, browser) => {
       bot.sendMessage(chatId, "Choose stock first, \n/help for help");
       return;
     }
-    if (!chatState.chartLoaded) {
+    if (!chatState.chart) {
       bot.sendMessage(chatId, "Choose a time interval first");
       return;
     }
     await runExclusive(chatId, chatState, () =>
-      similarHandler(chatState.page, bot, chatId)
+      similarHandler(bot, chatId, chatState.chart)
     );
   });
 
@@ -175,6 +148,7 @@ module.exports = async (bot, browser) => {
     }
     // Read the selection now so a later /s cannot change it mid-request.
     const stockName = chatState.coin;
+    const symbol = stockSymbols.get(stockName);
 
     if (msg.text == "Market Depth") {
       await runExclusive(chatId, chatState, async () => {
@@ -182,30 +156,21 @@ module.exports = async (bot, browser) => {
           await bot.sendMessage(chatId, "There is no data for requested stock!");
           return;
         }
-        const page = await getPage(chatState);
-        if (page.url() !== MARKET_DEPTH_URL) {
-          chatState.chartLoaded = false;
-          await page.goto(MARKET_DEPTH_URL);
-        }
-        await captureMarketDepth(page, bot, chatId, stockListSSI[stockName]);
+        await sendPhoto(bot, chatId, await renderMarketDepth(stockListSSI[stockName]));
       });
       return;
     }
 
     if (msg.text == "ALL") {
       await runExclusive(chatId, chatState, () =>
-        captureAllHandler(bot, chatId, browser, stockSymbols.get(stockName))
+        captureAllHandler(bot, chatId, symbol)
       );
       return;
     }
 
     const interval = msg.text;
     await runExclusive(chatId, chatState, async () => {
-      const page = await getPage(chatState);
-      chatState.chartLoaded = false;
-      await page.goto(stockSymbols.get(stockName));
-      await captureHandler(bot, chatId, page, interval);
-      chatState.chartLoaded = true;
+      chatState.chart = await captureHandler(bot, chatId, symbol, interval);
     });
   });
 };
