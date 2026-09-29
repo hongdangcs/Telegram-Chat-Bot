@@ -1,9 +1,4 @@
-const { tradingView } = require("../configs");
-const captureAll = require("./capture-all");
-const modify = require("./modify-values");
-const priceData = require("./price-data");
 const saveSettings = require("./savesettings");
-const timeIntervalSetting = require("./time-interval");
 
 async function tradingViewLogin(browser, sessionid_sign, sessionid) {
   // open new browser page
@@ -12,7 +7,7 @@ async function tradingViewLogin(browser, sessionid_sign, sessionid) {
   await new Promise((resolve) => setTimeout(resolve, 5000));
 
   // login by session id
-  cookies = [
+  const cookies = [
     { name: "sessionid_sign", value: sessionid_sign },
     { name: "sessionid", value: sessionid },
   ];

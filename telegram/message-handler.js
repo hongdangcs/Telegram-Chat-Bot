@@ -1,83 +1,110 @@
+const path = require("path");
+const { pathToFileURL } = require("url");
 const { tradingView } = require("../configs");
-const captureAll = require("../tradingview/capture-all");
-const chartData = require("../tradingview/chart-data");
-const fs = require("fs");
 const captureHandler = require("./capture-handler");
 const captureAllHandler = require("./capture-all-handler");
-const { createPage } = require("../puppeteer-page/puppeteer-page");
 const similarHandler = require("./similar-handler");
 const get_tradingview_urls = require("../tradingview/get-tradingview-urls");
 const streamer = require("../ssi/stream-data");
 const captureMarketDepth = require("../ssi/capture-market-depth");
 
+const SESSION_IDLE_MS = 300000;
+// Rendered from the local file so the chart code always matches this
+// checkout, without depending on a GitHub Pages deployment.
+const MARKET_DEPTH_URL = pathToFileURL(
+  path.join(__dirname, "..", "index.html")
+).href;
+const HELP_TEXT =
+  "/help - Show this message" +
+  "\n/s <stock name> - Select a stock" +
+  "\n/list - Show all stocks";
+
 module.exports = async (bot, browser) => {
   const chatStates = {};
-  const stock = tradingView.stock;
-
-  let stockSymbols = await get_tradingview_urls();
-  stockSymbols = new Map([...stockSymbols.entries()].sort());
-
-  stockListSSI = streamer.stockList;
-
+  const stockListSSI = streamer.stockList;
   const timeIntervals = tradingView.timeInterval;
 
-  bot.onText(/\/help/, (msg) => {
-    const chatId = msg.chat.id;
-    bot.sendMessage(
-      chatId,
-      "/help - Show this message" +
-        "\n/s <stock name> - Search for stock" +
-        "\n/list - Show all stocks"
-    );
+  // Stocks from configs.js stay available even if the scanner request fails.
+  const symbolUrls = new Map([
+    ...Object.entries(tradingView.stock || {}),
+    ...(await get_tradingview_urls()),
+  ]);
+  const stockSymbols = new Map(
+    [...symbolUrls].sort(([a], [b]) => a.localeCompare(b))
+  );
 
-    return;
-  });
-  bot.onText(/\/start/, (msg) => {
-    const chatId = msg.chat.id;
-    bot.sendMessage(
-      chatId,
-      "/help - Show this message" +
-        "\n/s <stock name> - Select a stock" +
-        "\n/list - Show all stocks"
-    );
+  // Drops the session (and closes its browser page) after SESSION_IDLE_MS
+  // without activity; every interaction restarts the countdown.
+  function touchSession(chatId, chatState) {
+    clearTimeout(chatState.idleTimer);
+    chatState.idleTimer = setTimeout(() => {
+      if (chatState.busy) {
+        touchSession(chatId, chatState);
+        return;
+      }
+      if (chatStates[chatId] === chatState) {
+        delete chatStates[chatId];
+      }
+      if (chatState.page) {
+        chatState.page.close().catch(() => {});
+      }
+    }, SESSION_IDLE_MS);
+  }
 
-    return;
-  });
+  async function getPage(chatState) {
+    if (!chatState.page || chatState.page.isClosed()) {
+      chatState.page = await browser.newPage();
+      chatState.page.on("dialog", async (dialog) => {
+        await dialog.accept();
+      });
+    }
+    return chatState.page;
+  }
 
-  bot.onText(/\/similar/, async (msg) => {
-    const chatId = msg.chat.id;
-    const chatState = chatStates[chatId];
-    if (!chatState) {
-      bot.sendMessage(chatId, "Try /start first");
-      return;
-    }
-    if (!chatState.coin) {
-      bot.sendMessage(chatId, "Choose 1 first");
-      return;
-    }
-    if (!chatState.page) {
-      bot.sendMessage(chatId, "Try /start again and choose 1 and 2");
-      return;
-    }
-    const timeNow = new Date();
-    if (chatState.time && timeNow - chatState.time < 15000) {
-      bot.sendMessage(
+  // Each chat shares one browser page, so only one request may drive it at
+  // a time; overlapping requests would corrupt each other's screenshots.
+  async function runExclusive(chatId, chatState, task) {
+    if (chatState.busy) {
+      await bot.sendMessage(
         chatId,
         "Too many requests, please wait for last request to finish"
       );
       return;
     }
-    chatState.time = timeNow;
+    chatState.busy = true;
+    touchSession(chatId, chatState);
     try {
-      await similarHandler(chatState.page, bot, chatId);
+      await task();
     } catch (error) {
       console.log(error);
-      bot.sendMessage(chatId, "Something went wrong");
-      return;
+      await bot.sendMessage(chatId, "Something went wrong");
+    } finally {
+      chatState.busy = false;
+      touchSession(chatId, chatState);
     }
+  }
+
+  bot.onText(/^\/(help|start)\b/, (msg) => {
+    bot.sendMessage(msg.chat.id, HELP_TEXT);
   });
 
-  bot.onText(/\/list/, async (msg) => {
+  bot.onText(/^\/similar\b/, async (msg) => {
+    const chatId = msg.chat.id;
+    const chatState = chatStates[chatId];
+    if (!chatState || !chatState.coin) {
+      bot.sendMessage(chatId, "Choose stock first, \n/help for help");
+      return;
+    }
+    if (!chatState.chartLoaded) {
+      bot.sendMessage(chatId, "Choose a time interval first");
+      return;
+    }
+    await runExclusive(chatId, chatState, () =>
+      similarHandler(chatState.page, bot, chatId)
+    );
+  });
+
+  bot.onText(/^\/list\b/, async (msg) => {
     const chatId = msg.chat.id;
     let message = "Stocks: \n";
     for (let stock of stockSymbols.keys()) {
@@ -88,22 +115,24 @@ module.exports = async (bot, browser) => {
       message += stock + ", ";
     }
     bot.sendMessage(chatId, message);
-    return;
   });
 
   bot.on("message", async (msg) => {
-    if (msg.text == "/start") {
+    // Stickers, photos, etc. have no text.
+    if (!msg.text) {
       return;
     }
-    if (msg.text.startsWith("/s")) {
-      const chatId = msg.chat.id;
-      let stockName = msg.text.split(" ")[1];
-      if (!stockName) {
+    const chatId = msg.chat.id;
+    const [rawCommand, stockArg] = msg.text.trim().split(/\s+/);
+    // "/s@BotName FPT" is how Telegram sends commands in group chats.
+    const command = rawCommand.split("@")[0];
+
+    if (command === "/s") {
+      if (!stockArg) {
         bot.sendMessage(chatId, "Invalid stock name, \n/help for help");
         return;
       }
-      stockName = stockName.toUpperCase();
-
+      const stockName = stockArg.toUpperCase();
       if (!stockSymbols.has(stockName)) {
         bot.sendMessage(
           chatId,
@@ -115,7 +144,7 @@ module.exports = async (bot, browser) => {
         chatStates[chatId] = {};
       }
       chatStates[chatId].coin = stockName;
-      updateTimeout(chatStates, chatId);
+      touchSession(chatId, chatStates[chatId]);
       bot.sendMessage(chatId, stockName + " was chosen.", {
         reply_markup: {
           keyboard: [
@@ -127,135 +156,56 @@ module.exports = async (bot, browser) => {
       });
       return;
     }
-    if (msg.text.startsWith("/")) {
+    if (command.startsWith("/")) {
       return;
     }
+
+    const chatState = chatStates[chatId];
+    const isKnownButton =
+      msg.text == "Market Depth" ||
+      msg.text == "ALL" ||
+      timeIntervals.hasOwnProperty(msg.text);
+    if (!isKnownButton) {
+      bot.sendMessage(chatId, "Invalid input,\n/help for help");
+      return;
+    }
+    if (!chatState || !chatState.coin) {
+      bot.sendMessage(chatId, "Choose stock first, \n/help for help");
+      return;
+    }
+    // Read the selection now so a later /s cannot change it mid-request.
+    const stockName = chatState.coin;
 
     if (msg.text == "Market Depth") {
-      const chatId = msg.chat.id;
-      const chatState = chatStates[chatId];
-      updateTimeout(chatStates, chatId);
-      if (!chatState) {
-        bot.sendMessage(chatId, "Choose stock first!");
-        return;
-      }
-      const timeNow = new Date();
-      if (chatState.time && timeNow - chatState.time < 30000) {
-        bot.sendMessage(
-          chatId,
-          "Too many requests, please wait for last request to finish"
-        );
-        return;
-      }
-      try {
-        // update time
-        chatState.time = timeNow;
-        // execute request
-        stockName = chatState.coin;
-        if (!stockName) {
-          bot.sendMessage(chatId, "Choose stock first, \n/help for help");
-          return;
-        }
+      await runExclusive(chatId, chatState, async () => {
         if (!stockListSSI[stockName]) {
-          await bot.sendMessage(
-            chatId,
-            "There is no data for requested stock!"
-          );
+          await bot.sendMessage(chatId, "There is no data for requested stock!");
           return;
         }
-        if (!chatState.page) {
-          chatState.page = await browser.newPage();
-          chatState.page.on("dialog", async (dialog) => {
-            await dialog.accept();
-          });
+        const page = await getPage(chatState);
+        if (page.url() !== MARKET_DEPTH_URL) {
+          chatState.chartLoaded = false;
+          await page.goto(MARKET_DEPTH_URL);
         }
-        await new Promise((resolve) => setTimeout(resolve, 1800));
-        await chatState.page.goto(
-          "https://hongdangcs.github.io/Telegram-Chat-Bot/"
-        );
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        await captureMarketDepth(
-          chatState.page,
-          bot,
-          chatId,
-          stockListSSI[stockName]
-        );
-      } catch (error) {
-        console.log(error);
-        bot.sendMessage(chatId, "Something went wrong");
-        return;
-      }
+        await captureMarketDepth(page, bot, chatId, stockListSSI[stockName]);
+      });
       return;
     }
 
-    if (timeIntervals.hasOwnProperty(msg.text)) {
-      const chatId = msg.chat.id;
-      const chatState = chatStates[chatId];
-      updateTimeout(chatStates, chatId);
-      if (!chatState) {
-        bot.sendMessage(chatId, "Choose stock first!");
-        return;
-      }
-      chatState.timeInterval = msg.text;
-      const timeNow = new Date();
-      if (chatState.time && timeNow - chatState.time < 30000) {
-        bot.sendMessage(
-          chatId,
-          "Too many requests, please wait for last request to finish"
-        );
-        return;
-      }
-      chatState.time = timeNow;
-      try {
-        if (!chatState.coin) {
-          bot.sendMessage(chatId, "Choose stock first");
-          return;
-        }
-        if (!chatState.page) {
-          chatState.page = await browser.newPage();
-          chatState.page.on("dialog", async (dialog) => {
-            await dialog.accept();
-          });
-        }
-        await new Promise((resolve) => setTimeout(resolve, 1800));
-        await chatState.page.goto(stockSymbols.get(chatState.coin));
-        await captureHandler(
-          msg,
-          chatState,
-          chatId,
-          bot,
-          chatState.page,
-          stock
-        );
-      } catch (error) {
-        console.log(error);
-        bot.sendMessage(chatId, "Something went wrong");
-        return;
-      }
-
-      return;
-    } else if (msg.text == "ALL") {
-      const chatId = msg.chat.id;
-      const chatState = chatStates[chatId];
-      updateTimeout(chatStates, chatId);
-      if (!chatState) {
-        bot.sendMessage(chatId, "Choose stock first!");
-        return;
-      }
-      await captureAllHandler(msg, chatState, chatId, bot, browser);
+    if (msg.text == "ALL") {
+      await runExclusive(chatId, chatState, () =>
+        captureAllHandler(bot, chatId, browser, stockSymbols.get(stockName))
+      );
       return;
     }
-    const chatId = msg.chat.id;
-    bot.sendMessage(chatId, "Invalid input,\n/help for help");
+
+    const interval = msg.text;
+    await runExclusive(chatId, chatState, async () => {
+      const page = await getPage(chatState);
+      chatState.chartLoaded = false;
+      await page.goto(stockSymbols.get(stockName));
+      await captureHandler(bot, chatId, page, interval);
+      chatState.chartLoaded = true;
+    });
   });
 };
-
-function updateTimeout(chatStates, chatId) {
-  setTimeout(() => {
-    const chatState = chatStates[chatId];
-    if (chatState && chatState.page) {
-      chatState.page.close();
-    }
-    delete chatStates[chatId];
-  }, 300000);
-}

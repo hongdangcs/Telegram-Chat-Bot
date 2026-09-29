@@ -1,32 +1,20 @@
 const axios = require("axios");
 const { ssi } = require("../configs");
-let data = JSON.stringify({
-  consumerID: ssi.consumerID,
-  consumerSecret: ssi.consumerSecret,
-});
 
-let config = {
-  method: "post",
-  maxBodyLength: Infinity,
-  url: "https://fc-data.ssi.com.vn/api/v2/Market/AccessToken",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  data: data,
-};
-
+// Returns "Bearer <accessToken>"; throws if SSI rejects the credentials.
 async function getAccessToken() {
-  let accessToken = "";
-  await axios
-    .request(config)
-    .then((response) => {
-      accessToken = response.data.data.accessToken;
-      console.log("get access token successful");
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-  return accessToken;
+  const response = await axios.post(
+    "https://fc-data.ssi.com.vn/api/v2/Market/AccessToken",
+    {
+      consumerID: ssi.consumerID,
+      consumerSecret: ssi.consumerSecret,
+    }
+  );
+  const accessToken = response.data?.data?.accessToken;
+  if (!accessToken) {
+    throw new Error(response.data?.message || "SSI returned no access token");
+  }
+  return "Bearer " + accessToken;
 }
 
 module.exports = getAccessToken;
