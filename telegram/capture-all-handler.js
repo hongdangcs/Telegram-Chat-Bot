@@ -1,38 +1,23 @@
-const captureAll = require("../tradingview/capture-all");
 const { tradingView } = require("../configs");
-const fs = require("fs");
-const stock = tradingView.stock;
+const { fetchBars } = require("../tradingview/market-data");
+const timeframeFor = require("../tradingview/timeframes");
+const { analyzeSimilarPatterns } = require("../analysis/similar");
+const { renderChartStack } = require("../render/chart");
+const sendPhoto = require("./send-photo");
 
-async function captureAllHandler(msg, chatState, chatId, bot, browser) {
-  chatState.timeInterval = msg.text;
-  const timeNow = new Date();
-  if (chatState.time && timeNow - chatState.time < 30000) {
-    bot.sendMessage(
-      chatId,
-      "Too many requests, please wait for last request to finish"
-    );
-    return;
-  }
-  chatState.time = timeNow;
-  try {
-    if (!chatState.coin) {
-      bot.sendMessage(chatId, "Choose 1 first");
-      return;
-    }
-    const imgName = `${chatId}_${chatState.coin}_ALL`;
-    await captureAll(browser, stock[chatState.coin], imgName);
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    bot.sendPhoto(chatId, `./screenshots/${imgName}.png`);
-    await new Promise((resolve) => setTimeout(resolve, 1800));
-    // Delete the image after sending
-    setTimeout(() => {
-      fs.unlinkSync(`./screenshots/${imgName}.png`);
-    }, 1000);
-  } catch (error) {
-    console.log(error);
-    bot.sendMessage(chatId, "Something went wrong");
-    return;
-  }
+// Every configured interval stacked into one image.
+async function captureAllHandler(bot, chatId, symbol) {
+  const charts = await Promise.all(
+    Object.keys(tradingView.timeInterval).map(async (interval) => {
+      const data = await fetchBars(symbol, timeframeFor(interval));
+      return {
+        data,
+        analysis: analyzeSimilarPatterns(data.bars),
+        title: `${symbol} · ${interval}`,
+      };
+    })
+  );
+  await sendPhoto(bot, chatId, await renderChartStack(charts));
 }
 
 module.exports = captureAllHandler;

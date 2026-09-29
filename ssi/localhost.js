@@ -1,14 +1,12 @@
 const express = require("express");
 const cors = require("cors");
-const streamData = require("./stream-data");
 const streamer = require("./stream-data");
 const app = express();
-const path = require("path");
 const port = 3000;
 
 app.use(cors());
-stockList = streamer.stockList;
-abnormalStocks = streamer.abnormalStocks;
+const stockList = streamer.stockList;
+const abnormalStocks = streamer.abnormalStocks;
 
 app.get("/", async (req, res) => {
   res.send(stockList);
