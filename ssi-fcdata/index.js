@@ -132,3 +132,17 @@ exports.switchChannel = function (channel) {
         channel
       );
 }
+/**
+ * Replace the token sent on future negotiations and reconnections.
+ * @param {string} token "Bearer <accessToken>"
+ */
+exports.setToken = function (token) {
+    client.headers['Authorization'] = token;
+}
+/**
+ * Current connection state name, e.g. "connected", "disconnected", "connectFailed".
+ * @returns {string|undefined}
+ */
+exports.getState = function () {
+    return client.state ? client.state.desc : undefined;
+}

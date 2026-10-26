@@ -1,66 +1,36 @@
-const captureChart = require("../tradingview/capture-chart");
-const fs = require("fs");
+const { renderChart } = require("../render/chart");
+const { formatPercent, formatTime } = require("../render/format");
+const sendPhoto = require("./send-photo");
 
-async function similarHandler(page, bot, chatId) {
-  await page.mouse.move(900, 600);
-  await page.mouse.down();
-  await new Promise((resolve) => setTimeout(resolve, 300));
-  await page.evaluate(() => {
-    var keyDownEvent = new KeyboardEvent("keydown", {
-      key: "ArrowLeft",
-      keyCode: 37,
-      code: "ArrowLeft",
-      which: 37,
-    });
+/**
+ * Shows the next older bar the similarity search highlighted, with how the
+ * price moved 1, 2 and 3 bars after it. `chart` is what captureHandler
+ * returned; its cursor moves back one match per call.
+ */
+async function similarHandler(bot, chatId, chart) {
+  if (chart.cursor === 0) {
+    await bot.sendMessage(chatId, "No earlier similar setup in the loaded history.");
+    return;
+  }
+  chart.cursor--;
+  const { data, analysis, title } = chart;
+  const index = analysis.highlighted[chart.cursor];
+  const image = await renderChart({ data, analysis, title, focusIndex: index });
 
-    document.dispatchEvent(keyDownEvent);
-    const classNameSuffix = document
-      .querySelector('div[data-name="legend"]')
-      .className.split("-")[1]
-      .split(" ")[0];
-
-    let startTime = Date.now();
-    let timeout = 30000;
-
-    function monitorChange() {
-      var conditionMet = checkCondition();
-
-      if (conditionMet || Date.now() - startTime > timeout) {
-        var keyUpEvent = new KeyboardEvent("keyup", {
-          key: "ArrowLeft",
-          keyCode: 37,
-          code: "ArrowLeft",
-          which: 37,
-        });
-        setTimeout(() => {
-          document.dispatchEvent(keyUpEvent);
-        }, 150);
-        return;
-      } else {
-        requestAnimationFrame(monitorChange);
-      }
-    }
-
-    function checkCondition() {
-      let similarValue = document.querySelectorAll(
-        `div[data-name="legend-source-item"] .valueValue-${classNameSuffix}`
-      )[17].innerText;
-      let highValue = document.querySelectorAll(
-        `div[data-name="legend-series-item"] .valueValue-${classNameSuffix}`
-      )[2].innerText;
-      return similarValue == highValue;
-    }
-    return monitorChange();
+  const close = data.bars[index].close;
+  const moves = [1, 2, 3].map((n) => {
+    const later = data.bars[index + n];
+    const label = `${n} bar${n > 1 ? "s" : ""}`;
+    return later ? `${label} ${formatPercent(((later.close - close) / close) * 100)}` : `${label} n/a`;
   });
-  await new Promise((resolve) => setTimeout(resolve, 1800));
-  await captureChart(page, chatId + "similar");
-  await new Promise((resolve) => setTimeout(resolve, 600));
-  bot.sendPhoto(chatId, `./screenshots/${chatId}similar.png`);
-  bot.sendMessage(chatId, "/similar for next similar interval");
-  setTimeout(() => {
-    fs.unlinkSync(`./screenshots/${chatId}similar.png`);
-  }, 1000);
+  await sendPhoto(bot, chatId, image, {
+    caption:
+      `Similar setup on ${formatTime(data.bars[index].time, data.timeframe, data.info)}\n` +
+      `Price after ${moves.join(", ")}\n` +
+      (chart.cursor > 0
+        ? `/similar for the previous one (${chart.cursor} more)`
+        : "This is the oldest similar setup in the loaded history."),
+  });
 }
-module.exports = similarHandler;
 
-async function mouseMove(page, x1, x2, y) {}
+module.exports = similarHandler;
